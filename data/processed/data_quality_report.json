@@ -1,0 +1,139 @@
+{
+  "dataset_name": "GD-Studio/embeat_45m_spotify_tracks",
+  "schema_version": "2.0",
+  "full_stream_reference": {
+    "source_repository": "https://huggingface.co/datasets/GD-Studio/embeat_45m_spotify_tracks",
+    "total_repository_tracks": 45059660,
+    "sampled_stream_target_tracks": 18023864,
+    "license": "CC-BY-NC 4.0"
+  },
+  "row_counts": {
+    "raw_rows": 5145,
+    "clean_rows": 5000,
+    "removed_invalid_or_duplicate_rows": 145,
+    "retention_rate_pct": 97.18
+  },
+  "catalog_diversity": {
+    "unique_tracks": 5000,
+    "unique_artists": 71,
+    "unique_genre_combinations": 33
+  },
+  "core_audio_features": [
+    "danceability",
+    "energy",
+    "valence",
+    "tempo",
+    "acousticness",
+    "instrumentalness",
+    "liveness",
+    "speechiness",
+    "loudness"
+  ],
+  "structural_audio_features": [
+    "key",
+    "mode",
+    "time_signature"
+  ],
+  "feature_distributions": {
+    "danceability": {
+      "mean": 0.6666,
+      "std": 0.1473,
+      "min": 0.185,
+      "p25": 0.5626,
+      "median": 0.6855,
+      "p75": 0.7779,
+      "max": 0.9497,
+      "null_count_after_clean": 0
+    },
+    "energy": {
+      "mean": 0.6172,
+      "std": 0.2367,
+      "min": 0.1504,
+      "p25": 0.3993,
+      "median": 0.6596,
+      "p75": 0.825,
+      "max": 0.9899,
+      "null_count_after_clean": 0
+    },
+    "valence": {
+      "mean": 0.5575,
+      "std": 0.1943,
+      "min": 0.056,
+      "p25": 0.4162,
+      "median": 0.5646,
+      "p75": 0.6981,
+      "max": 0.962,
+      "null_count_after_clean": 0
+    },
+    "tempo": {
+      "mean": 116.9013,
+      "std": 22.7817,
+      "min": 68.159,
+      "p25": 98.232,
+      "median": 118.677,
+      "p75": 132.974,
+      "max": 177.928,
+      "null_count_after_clean": 0
+    },
+    "acousticness": {
+      "mean": 0.361,
+      "std": 0.3181,
+      "min": 0.0003,
+      "p25": 0.0718,
+      "median": 0.2008,
+      "p75": 0.6787,
+      "max": 0.9599,
+      "null_count_after_clean": 0
+    },
+    "instrumentalness": {
+      "mean": 0.1412,
+      "std": 0.2568,
+      "min": 0.0,
+      "p25": 0.0094,
+      "median": 0.0264,
+      "p75": 0.0951,
+      "max": 0.9799,
+      "null_count_after_clean": 0
+    },
+    "liveness": {
+      "mean": 0.166,
+      "std": 0.0785,
+      "min": 0.0344,
+      "p25": 0.1089,
+      "median": 0.1474,
+      "p75": 0.2052,
+      "max": 0.45,
+      "null_count_after_clean": 0
+    },
+    "speechiness": {
+      "mean": 0.1062,
+      "std": 0.1083,
+      "min": 0.0232,
+      "p25": 0.0468,
+      "median": 0.0719,
+      "p75": 0.1109,
+      "max": 0.5787,
+      "null_count_after_clean": 0
+    },
+    "loudness": {
+      "mean": -7.1856,
+      "std": 3.1258,
+      "min": -16.495,
+      "p25": -8.923,
+      "median": -6.308,
+      "p75": -4.831,
+      "max": -2.509,
+      "null_count_after_clean": 0
+    },
+    "popularity": {
+      "mean": 60.5426,
+      "std": 20.8221,
+      "min": 25.0,
+      "p25": 42.0,
+      "median": 60.0,
+      "p75": 79.0,
+      "max": 98.0,
+      "null_count_after_clean": 0
+    }
+  }
+}

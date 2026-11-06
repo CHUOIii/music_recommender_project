@@ -1,0 +1,34 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables & Secrets (NEVER commit tokens)
+.env
+
+# Large Model Artifacts (>100MB GitHub limit)
+models/*.pkl
+models/*.bin
+models/*.faiss
+models/*.ann
+
+# Raw large datasets (keep sample_tracks.csv and quality reports)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*.parquet
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
