@@ -74,7 +74,7 @@ def _base62_id(seed_num: int) -> str:
 
 def generate_clean_sample_and_report(
     target_clean_count: int = 5000,
-    output_csv: str = "data/processed/sample_tracks.csv",
+    output_csv: str = "data/processed/embeat_sample_tracks.csv",    
     report_json: str = "data/processed/data_quality_report.json",
 ) -> None:
     """

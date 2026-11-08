@@ -1,0 +1,18 @@
+{
+    "model_name": "EmbeatRecommender",
+    "training_method": "batch",
+    "total_tracks": 29985,
+    "audio_features": 9,
+    "total_genres": 4211,
+    "audio_matrix_shape": [
+        29985,
+        9
+    ],
+    "genre_matrix_shape": [
+        29985,
+        4211
+    ],
+    "artifact_path": "/content/drive/MyDrive/music_recommender_project/artifacts/embeat_recommender.joblib",
+    "artifact_filename": "embeat_recommender.joblib",
+    "metadata_generated_at": "2026-11-08T10:22:01.871817+00:00"
+}

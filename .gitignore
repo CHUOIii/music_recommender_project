@@ -1,34 +1,49 @@
-# Byte-compiled / optimized / DLL files
+
+# Python cache
 __pycache__/
 *.py[cod]
-*$py.class
+*.pyo
+*.class
 
 # Virtual environments
 .venv/
 venv/
 env/
 
-# Environment variables & Secrets (NEVER commit tokens)
+# Environment variables and secrets
 .env
+.env.*
+!.env.example
 
-# Large Model Artifacts (>100MB GitHub limit)
-models/*.pkl
-models/*.bin
-models/*.faiss
-models/*.ann
-
-# Raw large datasets (keep sample_tracks.csv and quality reports)
-data/raw/*
-!data/raw/.gitkeep
-data/processed/*.parquet
-
-# Jupyter Notebook checkpoints
+# Jupyter checkpoints
 .ipynb_checkpoints/
-*/.ipynb_checkpoints/
 
-# IDE & OS files
+# IDE and OS files
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
 
+# Raw and large source datasets
+data/raw/*
+!data/raw/.gitkeep
+
+# Temporary and downloaded data
+data/processed/*.parquet
+
+# Generated model artifacts - keep the main recommender
+artifacts/*.joblib
+!artifacts/embeat_recommender.joblib
+
+artifacts/*.pkl
+artifacts/*.pickle
+
+# Temporary test models
+artifacts/*_test.joblib
+artifacts/*_cli_test.joblib
+artifacts/*_stream_test.joblib
+
+# Keep reports and evaluation results
+# Do not ignore reports/
+
+# Keep notebooks, source code and documentation

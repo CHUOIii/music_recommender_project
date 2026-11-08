@@ -23,7 +23,8 @@ PARQUET_FILES: List[str] = [
     "data/train-00001-of-00003.parquet",
     "data/train-00002-of-00003.parquet",
 ]
-DEFAULT_LOCAL_SAMPLE = "data/processed/sample_tracks.csv"
+#DEFAULT_LOCAL_SAMPLE = "data/processed/sample_tracks.csv"
+DEFAULT_LOCAL_SAMPLE = "data/processed/embeat_sample_tracks.csv"
 
 
 def test_token_access(hf_token: Optional[str]) -> bool:

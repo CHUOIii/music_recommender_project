@@ -1,0 +1,18 @@
+{
+    "model_name": "EmbeatRecommender",
+    "training_method": "batch_accumulation",
+    "total_tracks": 4997,
+    "audio_features": 9,
+    "total_genres": 1995,
+    "audio_matrix_shape": [
+        4997,
+        9
+    ],
+    "genre_matrix_shape": [
+        4997,
+        1995
+    ],
+    "artifact_path": "/content/drive/MyDrive/music_recommender_project/artifacts/embeat_stream_cli_test.joblib",
+    "sample_ratio": 1.0,
+    "max_total_tracks": 5000
+}

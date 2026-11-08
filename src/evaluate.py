@@ -1,0 +1,873 @@
+'''
+import json
+import time
+import numpy as np
+import pandas as pd
+
+from pathlib import Path
+from sklearn.metrics.pairwise import cosine_similarity
+
+from src.recommender import EmbeatRecommender
+
+
+# ==========================================
+# 1. CONFIGURATION
+# ==========================================
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+ARTIFACT_PATH = (
+    PROJECT_ROOT
+    / "artifacts"
+    / "embeat_recommender.joblib"
+)
+
+OUTPUT_DIR = PROJECT_ROOT / "artifacts"
+
+TOP_N = 10
+N_QUERIES = 30
+ALPHA = 0.7
+MMR_LAMBDA = 0.7
+CANDIDATE_POOL = 50
+RANDOM_STATE = 42
+
+
+# ==========================================
+# 2. LOAD TRAINED MODEL
+# ==========================================
+
+def load_model():
+
+    if not ARTIFACT_PATH.exists():
+        raise FileNotFoundError(
+            f"Model artifact not found: {ARTIFACT_PATH}"
+        )
+
+    model = EmbeatRecommender.load_artifact(
+        ARTIFACT_PATH
+    )
+
+    print("MODEL LOADED SUCCESSFULLY")
+    print("Total tracks:", len(model.df))
+    print("Audio matrix:", model.feature_matrix.shape)
+    print("Genre matrix:", model.genre_matrix.shape)
+
+    return model
+
+
+# ==========================================
+# 3. HELPER FUNCTIONS
+# ==========================================
+
+def extract_genres(result):
+
+    genres = set()
+
+    for value in result["artist_genres"].fillna(""):
+
+        for genre in str(value).split(","):
+
+            genre = genre.strip().lower()
+
+            if genre:
+                genres.add(genre)
+
+    return genres
+
+
+def calculate_intra_list_diversity(
+    model,
+    result,
+    alpha=0.7,
+    hybrid=False
+):
+
+    if len(result) < 2:
+        return 0.0
+
+    indices = [
+        model.id_to_idx[track_id]
+        for track_id in result["track_id"]
+    ]
+
+    audio_sim = cosine_similarity(
+        model.feature_matrix[indices]
+    )
+
+    if hybrid:
+
+        genre_sim = cosine_similarity(
+            model.genre_matrix[indices]
+        )
+
+        pairwise_sim = (
+            alpha * audio_sim
+            + (1 - alpha) * genre_sim
+        )
+
+    else:
+        pairwise_sim = audio_sim
+
+    upper = pairwise_sim[
+        np.triu_indices(len(indices), k=1)
+    ]
+
+    return float(1 - upper.mean())
+
+
+# ==========================================
+# 4. EVALUATE ONE MODEL
+# ==========================================
+
+def evaluate_model(
+    model,
+    query_ids,
+    model_name
+):
+
+    records = []
+    latency = []
+
+    for query_id in query_ids:
+
+        start = time.perf_counter()
+
+        if model_name == "Audio-only":
+
+            result = model.recommend_by_track(
+                query_id,
+                top_n=TOP_N,
+                exclude_same_artist=True
+            )
+
+        elif model_name == "Hybrid 70/30":
+
+            result = model.recommend_hybrid(
+                query_id,
+                top_n=TOP_N,
+                alpha=ALPHA,
+                exclude_same_artist=True
+            )
+
+        elif model_name == "Hybrid + MMR":
+
+            result = model.recommend_hybrid_mmr(
+                query_id,
+                top_n=TOP_N,
+                alpha=ALPHA,
+                mmr_lambda=MMR_LAMBDA,
+                candidate_pool=CANDIDATE_POOL,
+                exclude_same_artist=True
+            )
+
+        else:
+            raise ValueError(
+                f"Unknown model: {model_name}"
+            )
+
+        elapsed = (
+            time.perf_counter() - start
+        ) * 1000
+
+        latency.append(elapsed)
+
+        unique_artists = result[
+            "artist_name"
+        ].nunique()
+
+        unique_genres = len(
+            extract_genres(result)
+        )
+
+        hybrid = model_name != "Audio-only"
+
+        diversity = calculate_intra_list_diversity(
+            model,
+            result,
+            alpha=ALPHA,
+            hybrid=hybrid
+        )
+
+        for rank, (_, row) in enumerate(
+            result.iterrows(), start=1
+        ):
+
+            record = {
+                "model": model_name,
+                "query_id": query_id,
+                "rank": rank,
+                "track_id": row["track_id"],
+                "track_name": row["track_name"],
+                "artist_name": row["artist_name"],
+                "artist_genres": row["artist_genres"],
+                "popularity": float(row["popularity"])
+                if pd.notna(row["popularity"])
+                else None,
+                "intra_list_diversity": diversity
+            }
+
+            for column in [
+                "similarity",
+                "audio_similarity",
+                "genre_similarity",
+                "hybrid_similarity",
+                "mmr_score"
+            ]:
+
+                if column in row.index:
+
+                    record[column] = float(
+                        row[column]
+                    )
+
+            records.append(record)
+
+    details = pd.DataFrame(records)
+
+    # Metrics for this model
+    if details.empty:
+        raise ValueError(
+            f"No recommendations generated by {model_name}"
+        )
+
+    unique_tracks = details["track_id"].nunique()
+
+    summary = {
+        "model": model_name,
+
+        "total_queries": len(query_ids),
+
+        "total_recommendations": len(details),
+
+        "unique_recommended_tracks": int(
+            unique_tracks
+        ),
+
+        "avg_unique_artists": float(
+            details.groupby("query_id")[
+                "artist_name"
+            ].nunique().mean()
+        ),
+
+        "avg_unique_genres": float(
+            details.groupby("query_id").apply(
+                lambda group: len(
+                    extract_genres(group)
+                ),
+                include_groups=False
+            ).mean()
+        ),
+
+        "avg_popularity": float(
+            details["popularity"].mean()
+        ),
+
+        "intra_list_diversity": float(
+            details.groupby("query_id")[
+                "intra_list_diversity"
+            ].first().mean()
+        ),
+
+        "mean_latency_ms": float(
+            np.mean(latency)
+        ),
+
+        "median_latency_ms": float(
+            np.median(latency)
+        ),
+
+        "std_latency_ms": float(
+            np.std(latency)
+        ),
+
+        "min_latency_ms": float(
+            np.min(latency)
+        ),
+
+        "max_latency_ms": float(
+            np.max(latency)
+        )
+    }
+
+    similarity_column = (
+        "similarity"
+        if model_name == "Audio-only"
+        else "hybrid_similarity"
+    )
+
+    summary["avg_similarity"] = float(
+        details[similarity_column].mean()
+    )
+
+    if "mmr_score" in details.columns:
+
+        summary["avg_mmr_score"] = float(
+            details["mmr_score"].mean()
+        )
+
+    return summary, details
+
+
+# ==========================================
+# 5. RUN EVALUATION
+# ==========================================
+
+def main():
+
+    print("=" * 55)
+    print("EMBEAT MODEL EVALUATION")
+    print("=" * 55)
+
+    OUTPUT_DIR.mkdir(
+        parents=True,
+        exist_ok=True
+    )
+
+    model = load_model()
+
+    # Select deterministic query tracks
+    rng = np.random.default_rng(
+        RANDOM_STATE
+    )
+
+    n_queries = min(
+        N_QUERIES,
+        len(model.df)
+    )
+
+    query_ids = rng.choice(
+        model.df["track_id"].to_numpy(),
+        size=n_queries,
+        replace=False
+    ).tolist()
+
+    print("\nQueries:", len(query_ids))
+
+    models = [
+        "Audio-only",
+        "Hybrid 70/30",
+        "Hybrid + MMR"
+    ]
+
+    summaries = []
+    all_details = []
+
+    for model_name in models:
+
+        print("\nEvaluating:", model_name)
+
+        summary, details = evaluate_model(
+            model,
+            query_ids,
+            model_name
+        )
+
+        summaries.append(summary)
+        all_details.append(details)
+
+        print(
+            "Mean latency:",
+            round(summary["mean_latency_ms"], 3),
+            "ms"
+        )
+
+        print(
+            "Unique tracks:",
+            summary["unique_recommended_tracks"]
+        )
+
+        print(
+            "Intra-list diversity:",
+            round(
+                summary["intra_list_diversity"],
+                4
+            )
+        )
+
+    # ======================================
+    # 6. COMBINE RESULTS
+    # ======================================
+
+    summary_df = pd.DataFrame(summaries)
+
+    details_df = pd.concat(
+        all_details,
+        ignore_index=True
+    )
+
+    catalog_size = len(model.df)
+
+    for index, summary in enumerate(summaries):
+
+        summary["catalog_size"] = catalog_size
+
+        summary["coverage_pct"] = (
+            summary["unique_recommended_tracks"]
+            / catalog_size * 100
+        )
+
+    summary_df = pd.DataFrame(summaries)
+
+    # ======================================
+    # 7. SAVE METRICS
+    # ======================================
+
+    metrics = {
+        "evaluation_config": {
+            "n_queries": len(query_ids),
+            "top_n": TOP_N,
+            "alpha": ALPHA,
+            "mmr_lambda": MMR_LAMBDA,
+            "candidate_pool": CANDIDATE_POOL,
+            "random_state": RANDOM_STATE
+        },
+
+        "catalog_size": catalog_size,
+
+        "query_track_ids": query_ids,
+
+        "results": summaries,
+
+        "evaluation_notes": [
+            "No ground-truth relevance labels available.",
+            "Accuracy, Precision@K and Recall@K are not calculated.",
+            "Intra-list diversity is calculated as 1 minus mean pairwise similarity.",
+            "Coverage is based on unique recommended tracks."
+        ]
+    }
+
+    metrics_path = OUTPUT_DIR / "metrics.json"
+
+    with open(
+        metrics_path,
+        "w",
+        encoding="utf-8"
+    ) as file:
+
+        json.dump(
+            metrics,
+            file,
+            indent=4,
+            ensure_ascii=False
+        )
+
+    summary_df.to_csv(
+        OUTPUT_DIR / "evaluation_summary.csv",
+        index=False
+    )
+
+    details_df.to_csv(
+        OUTPUT_DIR / "evaluation_details.csv",
+        index=False
+    )
+
+
+    # ======================================
+    # 7.1 GENERATE EVALUATION CHARTS
+    # ======================================
+
+    import matplotlib.pyplot as plt
+
+    chart_metrics = [
+        ("avg_similarity", "Average Similarity"),
+        ("intra_list_diversity", "Intra-list Diversity"),
+        ("coverage_pct", "Catalog Coverage (%)"),
+        ("mean_latency_ms", "Mean Latency (ms)")
+    ]
+
+    fig, axes = plt.subplots(2, 2, figsize=(14, 9))
+
+    for ax, (metric, title) in zip(axes.flat, chart_metrics):
+        bars = ax.bar(
+            summary_df["model"],
+            summary_df[metric]
+        )
+
+        ax.set_title(title)
+        ax.set_ylabel(metric)
+        ax.tick_params(axis="x", rotation=15)
+        ax.grid(axis="y", alpha=0.3)
+
+        # Hiển thị giá trị trên đầu mỗi cột
+        for bar in bars:
+            value = bar.get_height()
+            ax.annotate(
+                f"{value:.4f}" if metric != "mean_latency_ms"
+                else f"{value:.2f}",
+                xy=(bar.get_x() + bar.get_width() / 2, value),
+                xytext=(0, 4),
+                textcoords="offset points",
+                ha="center"
+            )
+
+    fig.suptitle(
+        "Embeat Recommendation Model Evaluation",
+        fontsize=16
+    )
+
+    plt.tight_layout()
+
+    chart_path = OUTPUT_DIR / "evaluation_dashboard.png"
+
+    plt.savefig(
+        chart_path,
+        dpi=300,
+        bbox_inches="tight"
+    )
+
+    plt.show()
+    plt.close()
+
+    print("Evaluation dashboard saved:", chart_path)
+
+    # ======================================
+    # 8. DISPLAY RESULTS
+    # ======================================
+
+    print("\n" + "=" * 55)
+    print("EVALUATION SUMMARY")
+    print("=" * 55)
+
+    display_columns = [
+        "model",
+        "total_recommendations",
+        "unique_recommended_tracks",
+        "avg_similarity",
+        "intra_list_diversity",
+        "coverage_pct",
+        "mean_latency_ms"
+    ]
+
+    print(
+        summary_df[display_columns].to_string(
+            index=False
+        )
+    )
+
+    print("\nFiles saved successfully:")
+
+    print(metrics_path)
+
+    print(
+        OUTPUT_DIR / "evaluation_summary.csv"
+    )
+
+    print(
+        OUTPUT_DIR / "evaluation_details.csv"
+    )
+
+    print("\nEVALUATION COMPLETED SUCCESSFULLY!")
+
+
+if __name__ == "__main__":
+    main()
+'''
+"""Embeat Task 2.3 evaluation: audio, hybrid, MMR, random and popularity baselines."""
+import json
+import time
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
+
+from src.recommender import EmbeatRecommender
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+ARTIFACT_PATH = PROJECT_ROOT / 'artifacts' / 'embeat_recommender.joblib'
+OUTPUT_DIR = PROJECT_ROOT / 'artifacts'
+TOP_N = 10
+N_QUERIES = 30
+ALPHA = 0.7
+MMR_LAMBDA = 0.7
+CANDIDATE_POOL = 50
+RANDOM_STATE = 42
+MODELS = ['Audio-only', 'Hybrid 70/30', 'Hybrid + MMR', 'Random Baseline', 'Popularity Baseline']
+
+
+def load_model():
+    if not ARTIFACT_PATH.exists():
+        raise FileNotFoundError(f'Model artifact not found: {ARTIFACT_PATH}')
+    model = EmbeatRecommender.load_artifact(str(ARTIFACT_PATH))
+    print('Loaded:', len(model.df), 'tracks; audio:', model.feature_matrix.shape,
+          '; genres:', model.genre_matrix.shape)
+    return model
+
+
+def extract_genres(result):
+    return {genre.strip().lower()
+            for value in result['artist_genres'].fillna('')
+            for genre in str(value).split(',') if genre.strip()}
+
+
+def eligible_indices(model, query_id):
+    """Exclude query and same artist, consistently across all five methods."""
+    query_idx = model.id_to_idx[query_id]
+    mask = np.ones(len(model.df), dtype=bool)
+    mask[query_idx] = False
+    if 'artist_id' in model.df.columns:
+        artist_id = model.df.iloc[query_idx]['artist_id']
+        if pd.notna(artist_id):
+            mask &= ~(model.df['artist_id'] == artist_id).to_numpy()
+    else:
+        # Cannot reliably enforce same-artist filtering without artist_id.
+        raise ValueError('Missing artist_id: fair same-artist filtering is unavailable.')
+    return np.flatnonzero(mask)
+
+
+def baseline_result(model, query_id, method, rng):
+    candidates = eligible_indices(model, query_id)
+    if method == 'Random Baseline':
+        chosen = rng.choice(candidates, size=min(TOP_N, len(candidates)), replace=False)
+    else:
+        popularity = pd.to_numeric(model.df.iloc[candidates]['popularity'], errors='coerce').fillna(-np.inf).to_numpy()
+        # Stable ranking, with index order as tie-breaker.
+        chosen = candidates[np.argsort(-popularity, kind='stable')[:TOP_N]]
+    return model.df.iloc[chosen][['track_id', 'track_name', 'artist_name', 'artist_genres', 'popularity']].reset_index(drop=True).copy()
+
+
+def measure_list(model, query_id, result):
+    indices = [model.id_to_idx[tid] for tid in result['track_id']]
+    query_idx = model.id_to_idx[query_id]
+    if not indices:
+        return {'mean_audio_cosine': np.nan, 'mean_acoustic_distance': np.nan,
+                'mean_hybrid_cosine': np.nan, 'audio_diversity': np.nan,
+                'hybrid_diversity': np.nan}
+    query_audio = cosine_similarity(model.feature_matrix[query_idx:query_idx+1],
+                                    model.feature_matrix[indices]).ravel()
+    query_genre = cosine_similarity(model.genre_matrix[query_idx], model.genre_matrix[indices]).ravel()
+    audio_pair = cosine_similarity(model.feature_matrix[indices])
+    genre_pair = cosine_similarity(model.genre_matrix[indices])
+    if len(indices) > 1:
+        upper = np.triu_indices(len(indices), k=1)
+        audio_div = float(1 - audio_pair[upper].mean())
+        hybrid_div = float(1 - (ALPHA * audio_pair + (1 - ALPHA) * genre_pair)[upper].mean())
+    else:
+        audio_div = hybrid_div = 0.0
+    return {'mean_audio_cosine': float(query_audio.mean()),
+            'mean_acoustic_distance': float((1 - query_audio).mean()),
+            'mean_hybrid_cosine': float((ALPHA * query_audio + (1 - ALPHA) * query_genre).mean()),
+            'audio_diversity': audio_div, 'hybrid_diversity': hybrid_div}
+
+
+def evaluate_model(model, query_ids, model_name):
+    records, per_query, latencies = [], [], []
+    # Independent deterministic RNG per baseline, unaffected by other models.
+    rng = np.random.default_rng(RANDOM_STATE + 100)
+    for query_id in query_ids:
+        start = time.perf_counter()
+        if model_name == 'Audio-only':
+            result = model.recommend_by_track(query_id, top_n=TOP_N, exclude_same_artist=True)
+        elif model_name == 'Hybrid 70/30':
+            result = model.recommend_hybrid(query_id, top_n=TOP_N, alpha=ALPHA, exclude_same_artist=True)
+        elif model_name == 'Hybrid + MMR':
+            result = model.recommend_hybrid_mmr(query_id, top_n=TOP_N, alpha=ALPHA,
+                                                 mmr_lambda=MMR_LAMBDA, candidate_pool=CANDIDATE_POOL,
+                                                 exclude_same_artist=True)
+        elif model_name in ('Random Baseline', 'Popularity Baseline'):
+            result = baseline_result(model, query_id, model_name, rng)
+        else:
+            raise ValueError(f'Unknown model: {model_name}')
+        elapsed = (time.perf_counter() - start) * 1000
+        latencies.append(elapsed)
+        if result.empty:
+            raise ValueError(f'No recommendations: {model_name}, query {query_id}')
+        if query_id in set(result['track_id']):
+            raise AssertionError(f'Query track returned: {query_id}')
+        measures = measure_list(model, query_id, result)
+        per_query.append({'query_id': query_id, 'unique_artists': result['artist_name'].nunique(),
+                          'unique_genres': len(extract_genres(result)), **measures})
+        for rank, (_, row) in enumerate(result.iterrows(), start=1):
+            record = {'model': model_name, 'query_id': query_id, 'rank': rank,
+                      'track_id': row['track_id'], 'track_name': row['track_name'],
+                      'artist_name': row['artist_name'], 'artist_genres': row['artist_genres'],
+                      'popularity': float(row['popularity']) if pd.notna(row['popularity']) else None,
+                      **measures}
+            for column in ['similarity', 'audio_similarity', 'genre_similarity', 'hybrid_similarity', 'mmr_score']:
+                if column in row.index and pd.notna(row[column]):
+                    record[column] = float(row[column])
+            records.append(record)
+    details = pd.DataFrame(records)
+    query_metrics = pd.DataFrame(per_query)
+    summary = {'model': model_name, 'total_queries': len(query_ids),
+               'total_recommendations': len(details),
+               'unique_recommended_tracks': int(details['track_id'].nunique()),
+               'avg_unique_artists': float(query_metrics['unique_artists'].mean()),
+               'avg_unique_genres': float(query_metrics['unique_genres'].mean()),
+               'avg_popularity': float(details['popularity'].mean()),
+               'mean_latency_ms': float(np.mean(latencies)),
+               'median_latency_ms': float(np.median(latencies)),
+               'std_latency_ms': float(np.std(latencies)),
+               'min_latency_ms': float(np.min(latencies)),
+               'max_latency_ms': float(np.max(latencies))}
+    for metric in ['mean_audio_cosine', 'mean_acoustic_distance', 'mean_hybrid_cosine',
+                   'audio_diversity', 'hybrid_diversity']:
+        summary[metric] = float(query_metrics[metric].mean())
+    # Retain familiar fields, but specify the comparison definition explicitly.
+    summary['avg_similarity'] = summary['mean_audio_cosine']
+    summary['intra_list_diversity'] = summary['audio_diversity']
+    if 'mmr_score' in details:
+        summary['avg_mmr_score'] = float(details['mmr_score'].mean())
+    return summary, details
+
+
+
+def save_dashboard(summary_df):
+    """
+    Generate evaluation charts and save them
+    under reports/figures/.
+    """
+
+    figure_dir = OUTPUT_DIR / "figures"
+    figure_dir.mkdir(parents=True, exist_ok=True)
+
+    chart_metrics = [
+        (
+            "mean_audio_cosine",
+            "Mean Audio Cosine Similarity",
+            "Similarity"
+        ),
+        (
+            "mean_acoustic_distance",
+            "Mean Acoustic Distance",
+            "Distance"
+        ),
+        (
+            "audio_diversity",
+            "Audio Intra-list Diversity",
+            "Diversity"
+        ),
+        (
+            "avg_unique_artists",
+            "Average Unique Artists",
+            "Number of Artists"
+        ),
+        (
+            "avg_unique_genres",
+            "Average Unique Genres",
+            "Number of Genres"
+        ),
+        (
+            "coverage_pct",
+            "Catalog Coverage",
+            "Coverage (%)"
+        ),
+        (
+            "mean_latency_ms",
+            "Mean Recommendation Latency",
+            "Latency (ms)"
+        )
+    ]
+
+    fig, axes = plt.subplots(
+        4, 2,
+        figsize=(17, 19)
+    )
+
+    for ax, (metric, title, ylabel) in zip(
+        axes.flat,
+        chart_metrics
+    ):
+        bars = ax.bar(
+            summary_df["model"],
+            summary_df[metric]
+        )
+
+        ax.set_title(title)
+        ax.set_ylabel(ylabel)
+        ax.tick_params(
+            axis="x",
+            rotation=25
+        )
+        ax.grid(
+            axis="y",
+            alpha=0.25
+        )
+
+        for bar in bars:
+            value = bar.get_height()
+
+            ax.annotate(
+                f"{value:.3f}",
+                (
+                    bar.get_x() + bar.get_width() / 2,
+                    value
+                ),
+                xytext=(0, 3),
+                textcoords="offset points",
+                ha="center",
+                fontsize=8
+            )
+
+    axes.flat[-1].axis("off")
+
+    fig.suptitle(
+        "Embeat Recommendation Model Evaluation",
+        fontsize=17
+    )
+
+    fig.tight_layout()
+
+    output_path = (
+        figure_dir / "evaluation_dashboard.png"
+    )
+
+    fig.savefig(
+        output_path,
+        dpi=200,
+        bbox_inches="tight"
+    )
+
+    plt.close(fig)
+
+    print("Dashboard saved:", output_path)
+
+
+
+def main():
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    model = load_model()
+    if model.genre_matrix is None:
+        raise ValueError('Genre matrix is required for this evaluation')
+    if 'artist_id' not in model.df.columns:
+        raise ValueError('Main artifact missing artist_id; cannot fairly compare same-artist exclusion.')
+    rng = np.random.default_rng(RANDOM_STATE)
+    query_ids = rng.choice(model.df['track_id'].to_numpy(),
+                           size=min(N_QUERIES, len(model.df)), replace=False).tolist()
+    summaries, details_list = [], []
+    for name in MODELS:
+        print('Evaluating:', name)
+        summary, details = evaluate_model(model, query_ids, name)
+        summary['catalog_size'] = len(model.df)
+        summary['coverage_pct'] = 100 * summary['unique_recommended_tracks'] / len(model.df)
+        summaries.append(summary)
+        details_list.append(details)
+    summary_df = pd.DataFrame(summaries)
+    details_df = pd.concat(details_list, ignore_index=True)
+    metrics = {'evaluation_config': {'n_queries': len(query_ids), 'top_n': TOP_N,
+                                     'alpha': ALPHA, 'mmr_lambda': MMR_LAMBDA,
+                                     'candidate_pool': CANDIDATE_POOL, 'random_state': RANDOM_STATE},
+               'catalog_size': len(model.df), 'query_track_ids': query_ids, 'results': summaries,
+               'evaluation_notes': [
+                   'No ground-truth relevance labels; Precision@K and Recall@K are not computed.',
+                   'All five methods use the same query tracks and exclude query and same artist.',
+                   'Mean acoustic distance = mean(1 - audio cosine(query, recommendation)); not Euclidean distance.',
+                   'avg_similarity = mean_audio_cosine for comparable cross-method evaluation.',
+                   'intra_list_diversity = audio_diversity for comparable cross-method evaluation.',
+                   'mean_hybrid_cosine and hybrid_diversity are supplementary metrics.',
+                   'Latency measures recommendation generation only, not evaluation metric calculation.',
+                   'Random baseline is deterministic given RANDOM_STATE; timing varies by run.'
+               ]}
+    with (OUTPUT_DIR / 'metrics.json').open('w', encoding='utf-8') as f:
+        json.dump(metrics, f, ensure_ascii=False, indent=4)
+    summary_df.to_csv(OUTPUT_DIR / 'evaluation_summary.csv', index=False)
+    details_df.to_csv(OUTPUT_DIR / 'evaluation_details.csv', index=False)
+    save_dashboard(summary_df)
+    print(summary_df[['model', 'mean_audio_cosine', 'mean_acoustic_distance',
+                      'audio_diversity', 'coverage_pct', 'mean_latency_ms']].to_string(index=False))
+    print('EVALUATION COMPLETED SUCCESSFULLY')
+
+
+if __name__ == '__main__':
+    main()

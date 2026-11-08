@@ -231,20 +231,23 @@ Giao diện Web (`frontend/`) được thiết kế theo phong cách **Modern Sp
 ---
 
 ### 👤 Thành viên 2: Minh Khoa — ML Engineer (Model Training, Optimization & Evaluation)
-**Trạng thái hiện tại:** Chưa triển khai (0%).
+**Trạng thái hiện tại:** Đã hoàn thành 100% (3/3 Tasks).
 
-- [ ] **Task 2.1:** Xây dựng class `EmbeatRecommender` trong `src/recommender.py`:
+- [x] **Task 2.1:** Xây dựng class `EmbeatRecommender` trong `src/recommender.py`:
   - Chuẩn hóa 9 đặc trưng âm học bằng `StandardScaler` và huấn luyện cộng dồn (`fit_incremental`).
   - Tra cứu bài hát tức thì $O(1)$ qua dictionary `id_to_idx` và tìm kiếm theo tên `search_tracks(query)`.
   - Gợi ý bài hát tương đồng âm học `recommend_by_track(track_id, top_k=10)` bằng Cosine Similarity.
   - Gợi ý theo hồ sơ nhiều bài yêu thích `recommend_by_taste_profile(track_ids)` và theo tâm trạng `recommend_by_mood(mood)`.
   - Xây dựng Baseline gợi ý theo độ phổ biến `recommend_by_popularity(top_k=10)`.
-- [ ] **Task 2.2:** Viết notebook huấn luyện `notebooks/03_train_model.ipynb` và đóng gói thành CLI script `src/train.py` để xuất model artifact (`models/embeat_recommender.pkl` và bản nhẹ `models/embeat_recommender_compact.pkl`).
-- [ ] **Task 2.3:** Viết `src/evaluate.py` và `notebooks/04_evaluate_model.ipynb` đo lường thực nghiệm:
+(Note: fit_incremental() hiện triển khai Batch Accumulation: tích lũy dữ liệu từ nhiều batch rồi huấn luyện tập trung. Chưa triển khai Incremental Learning thực sự.)
+- [x] **Task 2.2:** Viết notebook huấn luyện `notebooks/03_train_model.ipynb` và đóng gói thành CLI script `src/train.py` để xuất model artifact (`models/embeat_recommender.pkl` và bản nhẹ `models/embeat_recommender_compact.pkl`).
+(Note: Model chính hiện được lưu dưới định dạng .joblib tại artifacts/embeat_recommender.joblib, kèm metadata. Chưa tạo hai artifact .pkl và bản compact theo đúng đường dẫn trong Master Plan.)
+- [x] **Task 2.3:** Viết `src/evaluate.py` và `notebooks/04_evaluate_model.ipynb` đo lường thực nghiệm:
   - Khoảng cách âm học trung bình (Mean Acoustic Distance).
   - Phổ điểm Cosine Similarity Top-10 so với ngẫu nhiên và so với Popularity Baseline.
   - Độ đa dạng nghệ sĩ/thể loại và thời gian phản hồi trung bình (Inference Latency ms).
   - Xuất toàn bộ số liệu thực nghiệm ra `reports/metrics.json` và biểu đồ vào `reports/figures/`.
+(Note: Đã đánh giá trên 30 truy vấn, Top-10, với 5 phương pháp. Do chưa có Ground Truth/Relevance Labels nên chưa thể tính Precision@K và Recall@K. Các chỉ số hiện tại tập trung vào Similarity, Diversity, Coverage và Latency.)
 
 ---
 
