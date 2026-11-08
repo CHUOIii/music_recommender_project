@@ -15,6 +15,8 @@ AUDIO_FEATURES = [
     "loudness"
 ]
 
+CORE_AUDIO_FEATURES = AUDIO_FEATURES
+
 
 def clean_tracks(df):
     """

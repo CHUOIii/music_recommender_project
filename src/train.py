@@ -169,6 +169,8 @@ def train_model(input_path, output_path):
 
     print("Metadata saved:", metadata_path)
 
+    return model
+
 
 
 # ==========================================
@@ -251,6 +253,13 @@ def train_model_from_stream(
     print("Genre matrix:", model.genre_matrix.shape)
     print("Unique genres:", len(mlb.classes_))
 
+    # 5. Save model artifact
+    print("\n[4/5] Saving model artifact...")
+
+    model.save_artifact(output_path)
+
+    # 6. Generate training metadata
+    print("\n[5/5] Generating training metadata...")
 
     metadata = {
         "model_name": "EmbeatRecommender",
@@ -283,7 +292,7 @@ def train_model_from_stream(
 
     print("Metadata saved:", metadata_path)
 
-
+    return model
 
 
 # ==========================================

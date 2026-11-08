@@ -6,6 +6,7 @@ from pathlib import Path
 from scipy.sparse import csr_matrix
 
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import MultiLabelBinarizer
 
 from src.preprocess import (
     AUDIO_FEATURES,
@@ -58,8 +59,24 @@ class EmbeatRecommender:
             )
         }
 
-        # Reset genre matrix after retraining
-        self.genre_matrix = None
+        # Build genre matrix automatically if artist_genres is present,
+        # otherwise reset it to None.
+        if "artist_genres" in self.df.columns:
+            genre_list = (
+                self.df["artist_genres"]
+                .fillna("")
+                .apply(
+                    lambda x: [
+                        genre.strip().lower()
+                        for genre in str(x).split(",")
+                        if genre.strip()
+                    ]
+                )
+            )
+            mlb = MultiLabelBinarizer(sparse_output=True)
+            self.genre_matrix = csr_matrix(mlb.fit_transform(genre_list))
+        else:
+            self.genre_matrix = None
 
         # Clear pending batches after successful full training
         self._pending_batches = []
@@ -248,6 +265,7 @@ class EmbeatRecommender:
             "explicit",
             "release_year",
             "duration",
+            *AUDIO_FEATURES,
         ]
 
         # Chỉ lấy những cột thực sự tồn tại
@@ -294,7 +312,9 @@ class EmbeatRecommender:
     def search_tracks(
         self,
         query,
-        limit=20
+        limit=20,
+        *,
+        as_dict=False
     ):
         """
         Search tracks by track name or artist name.
@@ -311,7 +331,7 @@ class EmbeatRecommender:
         query = query.strip()
 
         if not query:
-            return pd.DataFrame()
+            return [] if as_dict else pd.DataFrame()
 
         track_match = self.df["track_name"].fillna(
             ""
@@ -339,9 +359,12 @@ class EmbeatRecommender:
                 "artist_genres",
                 "popularity"
             ]
-        ]
+        ].head(limit).reset_index(drop=True)
 
-        return result.head(limit).reset_index(drop=True)
+        if as_dict:
+            return result.to_dict(orient="records")
+
+        return result
 
     def get_track_details(self, track_id):
         """
@@ -848,7 +871,7 @@ class EmbeatRecommender:
         representing the requested mood.
 
         Supported moods:
-            happy, sad, calm, energetic, focus
+            happy, sad, calm, chill, energetic, focus
 
         Supports:
             top_n: Legacy Notebook parameter.
@@ -904,6 +927,18 @@ class EmbeatRecommender:
             },
 
             "calm": {
+                "danceability": 0.35,
+                "energy": 0.25,
+                "valence": 0.45,
+                "tempo": 85.0,
+                "acousticness": 0.80,
+                "instrumentalness": 0.35,
+                "speechiness": 0.04,
+                "liveness": 0.12,
+                "loudness": -18.0
+            },
+
+            "chill": {
                 "danceability": 0.35,
                 "energy": 0.25,
                 "valence": 0.45,
@@ -1019,19 +1054,21 @@ class EmbeatRecommender:
         if isinstance(exclude_track_ids, str):
             exclude_track_ids = [exclude_track_ids]
 
-        excluded = set(exclude_track_ids or [])
+        excluded_indices = [
+            self.id_to_idx[tid]
+            for tid in (exclude_track_ids or [])
+            if tid in self.id_to_idx
+        ]
 
-        candidates = self.df[
-            ~self.df["track_id"].isin(excluded)
-        ].copy()
+        popularity_scores = pd.to_numeric(
+            self.df["popularity"], errors="coerce"
+        ).fillna(-np.inf).to_numpy()
 
-        candidates = candidates.sort_values(
-            "popularity",
-            ascending=False
+        top_indices = self._rank_scores(
+            popularity_scores,
+            top_n,
+            excluded_indices=excluded_indices
         )
-
-        # Lấy index của các bài hát sau khi sắp xếp popularity
-        top_indices = candidates.head(top_n).index.tolist()
 
         # Sử dụng chung helper để tạo recommendation response
         result = self._get_result(top_indices)

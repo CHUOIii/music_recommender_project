@@ -33,18 +33,18 @@ flowchart LR
         HF[("Embeat 45M\nHugging Face")] --> Stream["stream_embeat.py"]
     end
 
-    subgraph L2["TẦNG 2: ML ENGINE (Lê Chí Thiện)"]
+    subgraph L2["TẦNG 2: ML ENGINE (Minh Khoa)"]
         Stream -->|Contract 1:\nDataFrame Schema| Train["train.py /\n03_train_model.ipynb"]
-        Train --> Artifact[("embeat_recommender.pkl")]
+        Train --> Artifact[("artifacts/embeat_recommender.joblib")]
         Artifact --> RecClass["src/recommender.py\n(EmbeatRecommender)"]
     end
 
     subgraph L3["TẦNG 3: BACKEND API (Nhật Minh)"]
         RecClass -->|Contract 2:\nPython Method API| FastAPI["backend/app.py\n(FastAPI + Pydantic)"]
-        FastAPI --> Mock["Fallback/Mock Mode\n(Khi chưa có file .pkl 2GB)"]
+        FastAPI --> Mock["Fallback/Mock Mode\n(Khi chưa có file model)"]
     end
 
-    subgraph L4["TẦNG 4: FRONTEND & QA (Minh Khoa)"]
+    subgraph L4["TẦNG 4: FRONTEND & QA (Lê Chí Thiện)"]
         FastAPI -->|Contract 3:\nREST JSON API| WebUI["frontend/index.html\n(Search + Spotify Embed + Radar Chart)"]
     end
 ```
@@ -334,12 +334,12 @@ music-recommender/
 | :---: | :--- | :--- | :--- | :---: |
 | **1** | **M1: Chốt Scope & Dataset** | Thống nhất đề tài Content-Based trên Embeat 45M, thiết kế kiến trúc 4 tầng. | Cả nhóm (Hoàng chủ trì) | ✅ Hoàn thành |
 | **2** | **M2: Streaming & EDA** | Hoàn thiện `stream_embeat.py`, `preprocess.py`, `01_explore_data.ipynb`, `02_preprocess_data.ipynb`. | Nguyễn Hoàng | ✅ Hoàn thành |
-| **3** | **M3: Train Full Model** | Huấn luyện cộng dồn 18 triệu bài hát, xuất `embeat_recommender.pkl`. | Lê Chí Thiện | ⏳ Chưa bắt đầu |
-| **4** | **M4: Nâng cấp Engine** | Bổ sung tra cứu $O(1)$ (`track_id` map), Taste Profile, Mood filter, xuất Compact Model & `train.py`. | Lê Chí Thiện + Hoàng | ⏳ Chưa bắt đầu |
-| **5** | **M5: Đánh giá Thực nghiệm** | Chạy `evaluate.py` & `04_evaluate_model.ipynb`, xuất `reports/metrics.json`. | Lê Chí Thiện | ⏳ Chưa bắt đầu |
-| **6** | **M6: Xây dựng Backend & UI** | Code `backend/app.py`, `schemas.py` và dựng giao diện `frontend/` song song theo Contract. | Nhật Minh + Minh Khoa | ⏳ Chưa bắt đầu |
+| **3** | **M3: Train Full Model** | Huấn luyện mô hình, xuất `artifacts/embeat_recommender.joblib`. | Minh Khoa | ✅ Hoàn thành |
+| **4** | **M4: Nâng cấp Engine** | Bổ sung tra cứu $O(1)$ (`track_id` map), Hybrid + MMR, Taste Profile, Mood filter & `train.py`. | Minh Khoa + Hoàng | ✅ Hoàn thành |
+| **5** | **M5: Đánh giá Thực nghiệm** | Chạy `evaluate.py` & `04_evaluate_model.ipynb`, xuất `reports/metrics.json`. | Minh Khoa | ✅ Hoàn thành |
+| **6** | **M6: Xây dựng Backend & UI** | Code `backend/app.py`, `schemas.py` và dựng giao diện `frontend/` song song theo Contract. | Nhật Minh + Lê Chí Thiện | ⏳ Chưa bắt đầu |
 | **7** | **M7: Tích hợp End-to-End** | Kết nối Frontend $\leftrightarrow$ Backend $\leftrightarrow$ Model, chạy `test_api.py` và bắt lỗi. | Cả nhóm | ⏳ Chưa bắt đầu |
-| **8** | **M8: Báo cáo & Bàn giao** | Hoàn thiện `README.md`, báo cáo tổng kết, slide thuyết trình và kịch bản demo. | Minh Khoa chủ trì | ⏳ Chưa bắt đầu |
+| **8** | **M8: Báo cáo & Bàn giao** | Hoàn thiện `README.md`, báo cáo tổng kết, slide thuyết trình và kịch bản demo. | Lê Chí Thiện chủ trì | ⏳ Chưa bắt đầu |
 
 ---
 
