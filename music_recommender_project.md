@@ -252,16 +252,16 @@ Giao diện Web (`frontend/`) được thiết kế theo phong cách **Modern Sp
 ---
 
 ### 👤 Thành viên 3: Nhật Minh Phạm — Backend Engineer (FastAPI & System Integration)
-**Trạng thái hiện tại:** Chưa triển khai (0%).
+**Trạng thái hiện tại:** Đã hoàn thành 100% (5/5 Tasks).
 
-- [ ] **Task 3.1:** Soạn thảo tài liệu `docs/api_contract.md` thống nhất cấu trúc request/response với ML Engineer và Frontend.
-- [ ] **Task 3.2:** Xây dựng `backend/schemas.py` định nghĩa các Pydantic models (`TrackItem`, `AudioFeatures`, `RecommendationResponse`, `TasteProfileRequest`, `HealthResponse`).
-- [ ] **Task 3.3:** Xây dựng `backend/app.py` bằng FastAPI:
+- [x] **Task 3.1:** Soạn thảo tài liệu `docs/api_contract.md` thống nhất cấu trúc request/response với ML Engineer và Frontend.
+- [x] **Task 3.2:** Xây dựng `backend/schemas.py` định nghĩa các Pydantic models (`TrackItem`, `AudioFeatures`, `RecommendationResponse`, `TasteProfileRequest`, `HealthResponse`).
+- [x] **Task 3.3:** Xây dựng `backend/app.py` bằng FastAPI:
   - Cấu hình `CORSMiddleware` cho phép Frontend gọi API.
   - Xây dựng bộ nạp model thông minh khi khởi động (`lifespan`): Tự động nạp model `.pkl` hoặc fallback sang dữ liệu mẫu để server luôn hoạt động trong mọi môi trường.
   - Triển khai đầy đủ các endpoints tại `/api/v1/...` (`health`, `search`, `tracks/{id}`, `recommend/track/{id}`, `recommend/profile`, `recommend/popular`, `recommend/mood/{mood}`).
-- [ ] **Task 3.4:** Viết bộ kiểm thử tự động `backend/tests/test_api.py` bằng `pytest` & `httpx`/`TestClient`.
-- [ ] **Task 3.5:** Viết hướng dẫn khởi chạy server tại `backend/README.md`.
+- [x] **Task 3.4:** Viết bộ kiểm thử tự động `backend/tests/test_api.py` bằng `pytest` & `httpx`/`TestClient`.
+- [x] **Task 3.5:** Viết hướng dẫn khởi chạy server tại `backend/README.md`.
 
 ---
 
