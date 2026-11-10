@@ -55,6 +55,17 @@ SCORE_COLUMNS = (
 model: Optional[EmbeatRecommender] = None
 model_mode: str = "unloaded"
 loaded_artifact_path: Optional[str] = None
+popularity_is_unit_scale: bool = True
+
+
+def _detect_unit_popularity_scale(df: pd.DataFrame) -> bool:
+    """Return True if dataset popularity column uses 0.0..1.0 unit scale instead of 0..100."""
+    if df is None or "popularity" not in df.columns:
+        return True
+    pop_series = pd.to_numeric(df["popularity"], errors="coerce").dropna()
+    if pop_series.empty:
+        return True
+    return float(pop_series.max()) <= 1.0
 
 
 def _to_relative_path(path: Path) -> str:
@@ -67,7 +78,7 @@ def _to_relative_path(path: Path) -> str:
 
 def _load_model_once() -> EmbeatRecommender:
     """Load the EmbeatRecommender artifact or fallback to CSV dataset."""
-    global model, model_mode, loaded_artifact_path
+    global model, model_mode, loaded_artifact_path, popularity_is_unit_scale
 
     if model is not None and model.df is not None:
         return model
@@ -78,6 +89,7 @@ def _load_model_once() -> EmbeatRecommender:
             model = EmbeatRecommender.load_artifact(ARTIFACT_PATH)
             model_mode = "artifact_joblib"
             loaded_artifact_path = _to_relative_path(ARTIFACT_PATH)
+            popularity_is_unit_scale = _detect_unit_popularity_scale(model.df)
             return model
         except Exception as exc:
             logger.warning(
@@ -95,6 +107,7 @@ def _load_model_once() -> EmbeatRecommender:
             model = recommender
             model_mode = "fallback_csv"
             loaded_artifact_path = _to_relative_path(csv_path)
+            popularity_is_unit_scale = _detect_unit_popularity_scale(model.df)
             return model
 
     raise RuntimeError(
@@ -168,7 +181,11 @@ def _normalize_popularity(raw_pop: Any) -> Optional[int]:
         pop_float = float(cleaned_pop)
         if math.isnan(pop_float) or math.isinf(pop_float):
             return None
-        if 0.0 < pop_float <= 1.0 and isinstance(raw_pop, (float, np.floating)):
+        if 0.0 < pop_float < 1.0 or (
+            popularity_is_unit_scale
+            and 0.0 <= pop_float <= 1.0
+            and isinstance(raw_pop, (float, np.floating))
+        ):
             return int(round(pop_float * 100))
         return int(round(pop_float))
     except (TypeError, ValueError):
@@ -272,7 +289,11 @@ def search_tracks(
     for idx, row in enumerate(raw_results, start=1):
         tid = row.get("track_id")
         merged_row = dict(row)
-        if tid:
+        has_all_audio = all(
+            feat in merged_row and merged_row[feat] is not None
+            for feat in AUDIO_FEATURE_FIELDS
+        )
+        if tid and not has_all_audio:
             try:
                 details = recommender.get_track_details(tid)
                 if details:

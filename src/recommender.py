@@ -349,9 +349,24 @@ class EmbeatRecommender:
             regex=False
         )
 
-        result = self.df[
-            track_match | artist_match
-        ][
+        matched_df = self.df[track_match | artist_match].head(limit)
+
+        if as_dict:
+            dict_columns = [
+                "track_id",
+                "track_name",
+                "artist_name",
+                "artist_genres",
+                "popularity",
+                *[col for col in AUDIO_FEATURES if col in self.df.columns],
+            ]
+            return (
+                matched_df[dict_columns]
+                .reset_index(drop=True)
+                .to_dict(orient="records")
+            )
+
+        result = matched_df[
             [
                 "track_id",
                 "track_name",
@@ -359,10 +374,7 @@ class EmbeatRecommender:
                 "artist_genres",
                 "popularity"
             ]
-        ].head(limit).reset_index(drop=True)
-
-        if as_dict:
-            return result.to_dict(orient="records")
+        ].reset_index(drop=True)
 
         return result
 
