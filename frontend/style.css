@@ -1,0 +1,23 @@
+/* Tùy chỉnh thanh cuộn giao diện tối phong cách Spotify */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #09090b;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #27272a;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #3f3f46;
+}
+
+/* Hiệu ứng mượt cho các thành phần UI */
+.transition {
+    transition: all 0.25s ease-in-out;
+}

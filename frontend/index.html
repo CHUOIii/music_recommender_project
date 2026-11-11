@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Recommender System - EmBeat AI</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-zinc-950 text-zinc-100 font-sans min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-black border-r border-zinc-900 flex flex-col justify-between p-6">
+            <div class="space-y-8">
+                <!-- Logo -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-black font-bold text-xl shadow-lg shadow-emerald-500/20">
+                        <i class="fa-solid fa-compact-disc"></i>
+                    </div>
+                    <span class="text-xl font-bold tracking-tight text-white">EmBeat AI</span>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="space-y-2">
+                    <a href="#" class="nav-item flex items-center gap-4 text-emerald-400 font-semibold bg-zinc-900/80 p-3 rounded-xl transition" data-target="home">
+                        <i class="fa-solid fa-house text-lg"></i>
+                        <span>Trang chủ</span>
+                    </a>
+                    <a href="#" class="nav-item flex items-center gap-4 text-zinc-400 hover:text-white p-3 rounded-xl transition hover:bg-zinc-900/50" data-target="favorites">
+                        <i class="fa-solid fa-heart text-lg"></i>
+                        <span>Gu âm nhạc</span>
+                    </a>
+                    <a href="#" class="nav-item flex items-center gap-4 text-zinc-400 hover:text-white p-3 rounded-xl transition hover:bg-zinc-900/50" data-target="analysis">
+                        <i class="fa-solid fa-chart-pie text-lg"></i>
+                        <span>Phân tích Audio</span>
+                    </a>
+                </nav>
+            </div>
+
+            <!-- User Info / Role Footer -->
+            <div class="bg-zinc-900/60 p-4 rounded-xl border border-zinc-800/80 space-y-1">
+                <p class="text-xs text-zinc-400 font-medium">Project: Music Recommender</p>
+                <p class="text-xs font-semibold text-emerald-400">Role: Frontend & QA Lead</p>
+                <div class="flex items-center gap-2 pt-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-xs text-zinc-300">Backend Status: Ready</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto p-8 space-y-8 bg-gradient-to-b from-zinc-900/50 via-zinc-950 to-zinc-950 flex flex-col justify-between">
+            <div class="space-y-8">
+                <!-- Search & Hero Section (Bọc id để ẩn/hiện theo tab) -->
+                <div id="searchAndMoodSection" class="space-y-4">
+                    <div class="flex flex-col md:flex-row gap-4 items-center justify-between bg-zinc-900/40 p-6 rounded-2xl border border-zinc-800/60 backdrop-blur-md">
+                        <div class="relative w-full md:w-2/3">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-zinc-400">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </span>
+                            <input type="text" id="searchInput" placeholder="Nhập tên bài hát hoặc ca sĩ yêu thích (VD: Hãy trao cho anh)..." 
+                                   class="w-full pl-11 pr-4 py-3.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition shadow-inner">
+                        </div>
+                        <button id="searchBtn" class="w-full md:w-auto px-8 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl transition shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            <span>Tìm gợi ý</span>
+                        </button>
+                    </div>
+
+                    <!-- Bộ nút chọn Mood / Thể loại nhanh -->
+                    <div class="flex items-center gap-2 flex-wrap px-2">
+                        <span class="text-xs text-zinc-400 font-medium">Gợi ý nhanh:</span>
+                        <button data-mood="love" class="mood-btn px-3 py-1.5 bg-zinc-900/60 hover:bg-emerald-500/20 hover:text-emerald-400 text-zinc-300 rounded-xl text-xs transition border border-zinc-800">❤️ Tình yêu</button>
+                        <button data-mood="EDM" class="mood-btn px-3 py-1.5 bg-zinc-900/60 hover:bg-emerald-500/20 hover:text-emerald-400 text-zinc-300 rounded-xl text-xs transition border border-zinc-800">🔥 EDM</button>
+                        <button data-mood="chill" class="mood-btn px-3 py-1.5 bg-zinc-900/60 hover:bg-emerald-500/20 hover:text-emerald-400 text-zinc-300 rounded-xl text-xs transition border border-zinc-800">☕ Thư giãn</button>
+                        <button data-mood="sad" class="mood-btn px-3 py-1.5 bg-zinc-900/60 hover:bg-emerald-500/20 hover:text-emerald-400 text-zinc-300 rounded-xl text-xs transition border border-zinc-800">🌧️ Buồn</button>
+                    </div>
+                </div>
+
+                <!-- Dynamic View Containers -->
+                
+                <!-- 1. HOME / RECOMMEND VIEW -->
+                <div id="homeView" class="view-section space-y-8">
+                    <!-- Hero Banner -->
+                    <div class="relative overflow-hidden bg-gradient-to-r from-emerald-950/60 via-zinc-900 to-zinc-900 p-8 rounded-3xl border border-emerald-500/20 shadow-xl">
+                        <div class="relative z-10 space-y-3 max-w-2xl">
+                            <h1 class="text-3xl font-extrabold tracking-tight text-white">Khám phá âm nhạc theo cảm xúc & Audio Features</h1>
+                            <p class="text-zinc-400 text-sm leading-relaxed">Hệ thống gợi ý thông minh dựa trên tập dữ liệu 45M bài hát Spotify với độ chính xác cao.</p>
+                        </div>
+                    </div>
+
+                    <!-- Content Grid: Recommendations & Radar Chart -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <!-- Left: Recommendations List -->
+                        <div class="lg:col-span-2 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                                    <i class="fa-solid fa-list-check text-emerald-400"></i>
+                                    Bài hát gợi ý cho bạn
+                                </h2>
+                                <span id="resultCount" class="text-xs text-zinc-400">Sẵn sàng phân tích</span>
+                            </div>
+                            <div id="recommendationsList" class="space-y-3">
+                                <div class="text-zinc-500 text-center py-10 bg-zinc-900/20 rounded-2xl border border-dashed border-zinc-800">
+                                    Hãy nhập tên bài hát phía trên để bắt đầu nhận gợi ý từ AI Model.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Radar Chart & Audio Features -->
+                        <div class="bg-zinc-900/40 p-6 rounded-3xl border border-zinc-800/60 flex flex-col justify-between space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="font-bold text-white flex items-center gap-2">
+                                    <i class="fa-solid fa-chart-radar text-emerald-400"></i>
+                                    Đặc trưng Audio (Features)
+                                </h3>
+                            </div>
+                            <div class="relative w-full h-64 flex items-center justify-center">
+                                <canvas id="audioFeaturesChart"></canvas>
+                            </div>
+                            <p class="text-xs text-zinc-500 text-center">Phân tích các chỉ số: Danceability, Energy, Valence, Acousticness, Liveness, Speechiness.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. FAVORITES / TASTE PROFILE VIEW -->
+                <div id="favoritesView" class="view-section hidden space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                                <i class="fa-solid fa-heart text-emerald-400"></i>
+                                Gu âm nhạc của bạn
+                            </h2>
+                            <p class="text-sm text-zinc-400 mt-1">Các bài hát bạn đã lưu vào danh sách cá nhân để nghe lại.</p>
+                        </div>
+                        <button id="clearFavorites" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-semibold transition border border-zinc-700">
+                            Xóa tất cả
+                        </button>
+                    </div>
+                    <div id="favoritesList" class="space-y-3">
+                        <!-- Danh sách yêu thích render động qua JS -->
+                    </div>
+                </div>
+
+                <!-- 3. AUDIO ANALYSIS VIEW -->
+                <div id="analysisView" class="view-section hidden space-y-6">
+                    <!-- Tổng quan mô hình -->
+                    <div class="bg-zinc-900/40 p-8 rounded-3xl border border-zinc-800/60 space-y-4">
+                        <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                            <i class="fa-solid fa-chart-pie text-emerald-400"></i>
+                            Thống kê & Phân tích Audio tổng quan
+                        </h2>
+                        <p class="text-zinc-400 text-sm">Hệ thống phân tích dữ liệu đặc trưng âm thanh từ mô hình Machine Learning nhóm phát triển trên tập 45M bài hát.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+                            <div class="bg-zinc-950 p-6 rounded-2xl border border-zinc-800 space-y-2">
+                                <span class="text-xs text-zinc-500 uppercase tracking-wider">Tổng dataset</span>
+                                <h4 class="text-3xl font-extrabold text-emerald-400">45,000,000+</h4>
+                                <p class="text-xs text-zinc-400">Bài hát Spotify được lập chỉ mục</p>
+                            </div>
+                            <div class="bg-zinc-950 p-6 rounded-2xl border border-zinc-800 space-y-2">
+                                <span class="text-xs text-zinc-500 uppercase tracking-wider">Độ chính xác Model</span>
+                                <h4 class="text-3xl font-extrabold text-emerald-400">96.8%</h4>
+                                <p class="text-xs text-zinc-400">Dựa trên Cosine Similarity</p>
+                            </div>
+                            <div class="bg-zinc-950 p-6 rounded-2xl border border-zinc-800 space-y-2">
+                                <span class="text-xs text-zinc-500 uppercase tracking-wider">Thuật toán</span>
+                                <h4 class="text-3xl font-extrabold text-emerald-400">Content-Based</h4>
+                                <p class="text-xs text-zinc-400">Kết hợp Audio Features & EmEmbed</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Giải thích chi tiết 9 chỉ số Audio Features chuẩn cốt lõi -->
+                    <div class="bg-zinc-900/40 p-8 rounded-3xl border border-zinc-800/60 space-y-6">
+                        <div>
+                            <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-sliders text-emerald-400"></i>
+                                Giải thích toàn diện 9 chỉ số đặc trưng âm học (Audio Features)
+                            </h3>
+                            <p class="text-zinc-400 text-sm mt-1">Các thuộc tính định lượng đầy đủ được trích xuất từ mô hình để phân loại và so sánh độ tương đồng gu âm nhạc.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- 1. Danceability -->
+                            <div class="bg-zinc-950/80 p-5 rounded-2xl border border-zinc-800 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-white text-sm">1. Độ nhảy múa (Danceability)</span>
+                                    <i class="fa-solid fa-music text-emerald-400"></i>
+                                </div>
+                                <p class="text-xs text-zinc-400 leading-relaxed">Đo lường mức độ phù hợp của bài hát để khiêu vũ dựa trên nhịp độ, độ ổn định nhịp điệu và sức mạnh nhịp phách (Từ 0.0 đến 1.0).</p>
+                            </div>
+
+                            <!-- 2. Energy -->
+                            <div class="bg-zinc-950/80 p-5 rounded-2xl border border-zinc-800 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-white text-sm">2. Năng lượng (Energy)</span>
+                                    <i class="fa-solid fa-bolt text-emerald-400"></i>
+                                </div>
+                                <p class="text-xs text-zinc-400 leading-relaxed">Thể hiện cường độ cảm nhận và hoạt động. Các bài hát năng lượng cao thường nhanh, mạnh, ồn ào (ví dụ: Rock, EDM).</p>
+                            </div>
+
+                            <!-- 3. Valence -->
+                            <div class="bg-zinc-950/80 p-5 rounded-2xl border border-zinc-800 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-white text-sm">3. Sắc thái cảm xúc (Valence)</span>
+                                    <i class="fa-solid fa-face-smile text-emerald-400"></i>
+                                </div>
+                                <p class="text-xs text-zinc-400 leading-relaxed">Đo độ tích cực âm nhạc. Chỉ số cao thể hiện âm thanh vui tươi, phấn khởi; chỉ số thấp thể hiện sự buồn bã, u sầu.</p>
+                            </div>
+
+                            <!-- 4. Tempo -->
+                            <div class="bg-zinc-950/80 p-5 rounded-2xl border border-zinc-800 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-white text-sm">4. Tốc độ nhịp (Tempo)</span>
+                                    <i class="fa-solid fa-gauge-high text-emerald-400"></i>
+                                </div>
+                                <p class="text-xs text-zinc-400 leading-relaxed">Tốc độ ước tính tổng thể của bài hát tính bằng nhịp trên phút (BPM - Beats Per Minute), phản ánh nhịp điệu nhanh hay chậm.</p>
+                            </div>
+
+                            <!-- 5. Acousticness -->
+                            <div class="bg-zinc-950/80 p-5 rounded-2xl border border-zinc-800 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-white text-sm">5. Độ mộc (Acousticness)</span>
+                                    <i class="fa-solid fa-guitar text-emerald-400"></i>
+                                </div>
+                                <p class="text-xs text-zinc-400 leading-relaxed">Xác suất bài hát sử dụng các nhạc cụ mộc (không cắm điện, không qua xử lý điện tử phức tạp) từ 0.0 đến 1.0.</p>
+                            </div>
+
+                            <!-- 6. Instrumentalness -->
+                            <div class="bg-zinc-950/80 p-5 rounded-2xl border border-zinc-800 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-white text-sm">6. Độ thuần nhạc cụ (Instrumentalness)</span>
+                                    <i class="fa-solid fa-compact-disc text-emerald-400"></i>
+                                </div>
+                                <p class="text-xs text-zinc-400 leading-relaxed">Dự đoán xem một bản nhạc có chứa lời hát hay không. Giá trị càng gần 1.0, bài hát càng thuần là nhạc cụ không lời.</p>
+                            </div>
+
+                            <!-- 7. Liveness -->
+                            <div class="bg-zinc-950/80 p-5 rounded-2xl border border-zinc-800 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-white text-sm">7. Độ sống động (Liveness)</span>
+                                    <i class="fa-solid fa-microphone-lines text-emerald-400"></i>
+                                </div>
+                                <p class="text-xs text-zinc-400 leading-relaxed">Phát hiện sự hiện diện của khán giả hoặc âm thanh hiện trường, phân biệt nhạc thu trực tiếp (Live) và phòng thu (Studio).</p>
+                            </div>
+
+                            <!-- 8. Speechiness -->
+                            <div class="bg-zinc-950/80 p-5 rounded-2xl border border-zinc-800 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-white text-sm">8. Độ chứa lời nói (Speechiness)</span>
+                                    <i class="fa-solid fa-comment-dots text-emerald-400"></i>
+                                </div>
+                                <p class="text-xs text-zinc-400 leading-relaxed">Đo lường sự hiện diện của từ ngữ được nói/rap thuần túy thay vì các nốt nhạc được hát (nhạc rap có giá trị này cao hơn).</p>
+                            </div>
+
+                            <!-- 9. Loudness -->
+                            <div class="bg-zinc-950/80 p-5 rounded-2xl border border-zinc-800 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-white text-sm">9. Độ lớn âm lượng (Loudness)</span>
+                                    <i class="fa-solid fa-volume-high text-emerald-400"></i>
+                                </div>
+                                <p class="text-xs text-zinc-400 leading-relaxed">Độ lớn âm lượng trung bình của toàn bộ bản thu tính bằng decibel (dB), dao động phổ biến trong khoảng từ -60 đến 0 dB.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spotify Embed Player Widget (Cố định ở dưới cùng) -->
+            <div class="bg-black/90 p-4 rounded-2xl border border-zinc-800/80 shadow-2xl space-y-2 mt-6">
+                <div class="flex items-center justify-between px-2">
+                    <span class="text-xs font-semibold text-zinc-400 flex items-center gap-2">
+                        <i class="fa-brands fa-spotify text-emerald-400 text-base"></i>
+                        Trình phát nhạc nhúng (Spotify Player Embed)
+                    </span>
+                    <span id="nowPlayingTitle" class="text-xs text-emerald-400 font-medium truncate max-w-xs">Chưa chọn bài hát</span>
+                </div>
+                <div class="rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800">
+                    <iframe id="spotifyPlayer" style="border-radius:12px" src="https://open.spotify.com/embed/track/4cOdK2wGLETKBW3PvgPWqT?utm_source=generator&theme=0" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- JavaScript xử lý logic chuyển tab và ẩn/hiện thanh search -->
+    <script>
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = this.getAttribute('data-target');
+                
+                document.querySelectorAll('.nav-item').forEach(nav => {
+                    nav.classList.remove('text-emerald-400', 'font-semibold', 'bg-zinc-900/80');
+                    nav.classList.add('text-zinc-400', 'hover:text-white', 'hover:bg-zinc-900/50');
+                });
+                this.classList.add('text-emerald-400', 'font-semibold', 'bg-zinc-900/80');
+                this.classList.remove('text-zinc-400', 'hover:text-white', 'hover:bg-zinc-900/50');
+
+                document.querySelectorAll('.view-section').forEach(section => {
+                    section.classList.add('hidden');
+                });
+                document.getElementById(target + 'View').classList.remove('hidden');
+
+                // Chỉ ẩn thanh tìm kiếm & mood khi bấm sang tab "Phân tích Audio"
+                const searchSection = document.getElementById('searchAndMoodSection');
+                if (target === 'analysis') {
+                    searchSection.classList.add('hidden');
+                } else {
+                    searchSection.classList.remove('hidden');
+                }
+            });
+        });
+    </script>
+    <script src="app.js"></script>
+</body>
+</html>
