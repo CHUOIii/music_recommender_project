@@ -1,170 +1,137 @@
-# EmBeat AI - Music Recommender System
-
-> **Hệ thống gợi ý âm nhạc trực tuyến toàn diện (Full-Stack AI Music Recommender System)**
->
-> Open-source ML project using dataset: `GD-Studio/embeat_45m_spotify_tracks` (45M+ Spotify Tracks from Hugging Face).
-
----
-
-## Giới thiệu (Overview)
-
-**EmBeat AI** là giải pháp gợi ý âm nhạc cá nhân hóa dựa trên phân tích 9 đặc trưng âm học (Audio Features) cốt lõi của bài hát thay vì phụ thuộc hoàn toàn vào lịch sử nghe nhạc truyền thống. Hệ thống hỗ trợ tìm kiếm bài hát mồi, đề xuất các bài hát có giai điệu và tiết tấu tương đồng bằng mô hình Machine Learning Cosine Similarity, hiển thị trực quan biểu đồ Radar Chart và nhúng khung nghe nhạc Spotify Embed trực tiếp trên giao diện Single Page Application (SPA).
-
----
-
-## Tính năng chính (Key Features)
-
-* **Giao diện SPA Đa Tab (Single Page Application):** Điều hướng mượt mà giữa các view chính (Trang chủ, Gu âm nhạc, Phân tích Audio) với cơ chế tự động ẩn/hiện thanh tìm kiếm & bộ lọc cảm xúc (Mood) thông minh.
-* **Tìm kiếm & Gợi ý thông minh:** Tích hợp gọi API trực tiếp từ backend để tìm kiếm bài hát theo từ khóa, trả về danh sách gợi ý kèm điểm số tương đồng (Match Score).
-* **Trình phát nhạc nhúng (Spotify Player Embed):** Nghe thử bài hát trực tiếp ngay trên giao diện thông qua widget `<iframe>` chính chủ của Spotify.
-* **Trực quan hóa Radar Chart:** Sử dụng thư viện `Chart.js` để vẽ biểu đồ đa chiều so sánh các chỉ số đặc trưng âm học (*Danceability, Energy, Valence, Acousticness, Liveness, Speechiness*).
-* **Quản lý Gu âm nhạc cá nhân:** Lưu trữ danh sách bài hát yêu thích thông qua bộ nhớ cục bộ `localStorage` của trình duyệt.
-* **Trang Phân tích Audio (Analysis View):** Minh bạch hóa các thông số kỹ thuật của 9 đặc trưng âm học và mô hình AI cho người dùng.
-
----
-
-## Công nghệ sử dụng (Tech Stack)
-
-### **Frontend (SPA Client)**
-* **HTML5 & Vanilla JavaScript (ES6+):** Quản lý trạng thái view động, tương tác DOM và gọi REST API.
-* **Tailwind CSS (CDN):** Thiết kế giao diện Modern Dark Theme chuẩn Spotify.
-* **Chart.js (CDN):** Vẽ biểu đồ mạng nhện (Radar Chart) hiển thị chỉ số Audio Features.
-* **FontAwesome (v6.4.0):** Hệ thống icon giao diện.
-
-### **Backend & Machine Learning Engine**
-* **Python 3.10+ & FastAPI:** Xây dựng RESTful API tốc độ cao, hỗ trợ CORS Middleware và Lifespan loading.
-* **Pydantic (v2):** Kiểm định dữ liệu Request & Response schemas (`backend/schemas.py`).
-* **Scikit-Learn & NumPy:** Chuẩn hóa `StandardScaler` và tính toán khoảng cách vector tương đồng.
-* **Pandas & PyArrow:** Tiền xử lý dữ liệu, streaming Parquet dataset và tự động Fallback CSV khi dev offline.
-
----
-
-## 9 Đặc trưng âm học (Audio Features)
-
-Mô hình gợi ý dựa trên vector 9 chiều âm học $\mathbf{x} \in \mathbb{R}^9$:
-
-| STT | Đặc trưng | Tên trường API | Mô tả ý nghĩa âm học |
-| :---: | :--- | :--- | :--- |
-| 1 | Độ nhảy múa | `danceability` | Mức độ phù hợp để nhảy múa dựa trên nhịp điệu và độ ổn định beat (`0.0 -> 1.0`). |
-| 2 | Năng lượng | `energy` | Cường độ cảm nhận âm thanh dồn dập, mạnh mẽ (EDM/Rock) vs êm dịu (`0.0 -> 1.0`). |
-| 3 | Cảm xúc | `valence` | Sắc thái cảm xúc: cao = vui tươi, hào hứng; thấp = trầm buồn (`0.0 -> 1.0`). |
-| 4 | Độ mộc | `acousticness` | Tỷ lệ sử dụng nhạc cụ mộc/gỗ không qua xử lý điện tử (`0.0 -> 1.0`). |
-| 5 | Độ sống động | `liveness` | Phát hiện âm thanh sân khấu/khán giả thu trực tiếp Live Concert (`0.0 -> 1.0`). |
-| 6 | Lời bài hát | `speechiness` | Mật độ lời nói/rap thuần túy trong bài hát (`0.0 -> 1.0`). |
-| 7 | Tốc độ nhịp | `tempo` | Tốc độ nhịp đập trên mỗi phút (BPM). |
-| 8 | Nhạc cụ | `instrumentalness` | Mức độ bài hát thuần nhạc cụ không lời (`0.0 -> 1.0`). |
-| 9 | Độ lớn | `loudness` | Độ lớn âm lượng trung bình của bản thu (dB, `-60 -> 0`). |
-
----
-
-## Cấu trúc dự án (Repository Structure)
-
+EmBeat AI — Music Recommender System
+EmBeat AI là dự án gợi ý âm nhạc sử dụng Machine Learning, FastAPI và giao diện web. Hệ thống tìm kiếm bài hát, đề xuất bài có đặc trưng âm học tương đồng, gợi ý theo tâm trạng và sở thích, đồng thời hỗ trợ nghe thử qua Spotify Embed.
+Dự án tham khảo bộ dữ liệu `GD-Studio/embeat_45m_spotify_tracks` trên Hugging Face. 45M+ là quy mô nguồn dữ liệu, không phải số bài đang được nạp trong bản demo. Trong lần chạy thử đã ghi nhận mô hình nạp 29.985 bài hát; số lượng thực tế phụ thuộc artifact được sử dụng.
+1. Chức năng chính
+Top 10 phổ biến: gọi API `/api/v1/recommend/popular` khi vào trang chủ.
+Tìm kiếm: tìm bài theo từ khóa qua `/api/v1/search`.
+Gợi ý từ bài hát: chọn bài gốc, nhận danh sách đề xuất từ `/api/v1/recommend/track/{track_id}`.
+Gợi ý theo tâm trạng: hỗ trợ `happy`, `sad`, `calm`, `chill`, `energetic`, `focus` qua `/api/v1/recommend/mood/{mood_name}`.
+Gu âm nhạc (Taste Profile): lưu bài yêu thích ở `localStorage` và gửi danh sách ID lên `/api/v1/recommend/profile` để nhận gợi ý AI.
+Spotify Embed: phát/nghe thử bài hát bằng khung nhúng Spotify (phụ thuộc khả năng phát do Spotify cung cấp).
+Radar Chart: dùng Chart.js để so sánh đặc trưng âm học của bài gốc và bài được chọn so sánh.
+Trạng thái giao diện: hiển thị đang tải, danh sách trống và lỗi kết nối/API.
+2. Công nghệ
+Thành phần	Công nghệ
+Frontend	HTML5, Tailwind CSS (CDN), CSS, Vanilla JavaScript
+Biểu đồ	Chart.js (CDN)
+Nghe nhạc	Spotify Embed (`iframe`)
+Backend	Python, FastAPI, Pydantic
+Machine Learning	scikit-learn, NumPy; mô hình/metadata trong `artifacts/`
+Xử lý dữ liệu	pandas, PyArrow; các script trong `src/`
+Kiểm thử	Backend API tests và tài liệu QA trong `docs/`
+3. Cấu trúc thư mục
 ```text
 music_recommender_project/
-├── artifacts/
-│   ├── embeat_recommender.joblib      # File mô hình ML đã huấn luyện chính
-│   ├── main_model_metadata.json       # Metadata cấu hình model chính
-│   └── training_metadata.json         # Metadata quá trình train
+├── artifacts/                  # Mô hình đã huấn luyện và metadata
 ├── backend/
-│   ├── tests/                         # Unit tests cho các API endpoints
-│   ├── venv/                          # Môi trường ảo Python
-│   ├── app.py                         # FastAPI Server chính
-│   └── schemas.py                     # Định nghĩa Pydantic Request/Response models
-├── data/
-│   └── processed/
-│       ├── balanced_eda.csv           # Dữ liệu phân tích khám phá cân bằng
-│       ├── data_quality_report.json   # Báo cáo kiểm định chất lượng dữ liệu
-│       ├── embeat_sample_tracks.csv   # Dữ liệu mẫu chuẩn Embeat
-│       └── sample_tracks.csv          # Dữ liệu mẫu fallback offline
+│   ├── app.py                  # REST API FastAPI
+│   ├── schemas.py              # Schema request/response
+│   └── tests/test_api.py       # Kiểm thử Backend
+├── data/processed/             # Dữ liệu đã xử lý, mẫu và báo cáo chất lượng
 ├── docs/
-│   ├── api_contract.md                # Đặc tả RESTful API giữa Backend và Frontend
-│   ├── bug_log.md                     # Nhật ký ghi nhận và xử lý lỗi tích hợp (QA)
-│   ├── data_dictionary.md             # Từ điển định nghĩa các trường dữ liệu âm học
-│   ├── dataset_sources.md             # Báo cáo khảo sát nguồn dataset & giấy phép
-│   ├── HANDOFF_TO_ML_ENGINEER.md      # Biên bản bàn giao kỹ thuật giữa DE và ML
-│   └── test_plan.md                   # Kế hoạch kiểm thử hệ thống (Test Plan)
+│   ├── api_contract.md         # Đặc tả API
+│   ├── test_plan.md            # Kế hoạch/test case QA
+│   ├── bug_log.md              # Nhật ký lỗi QA
+│   ├── data_dictionary.md
+│   ├── dataset_sources.md
+│   └── HANDOFF_TO_ML_ENGINEER.md
 ├── frontend/
-│   ├── app.js                         # Logic SPA, gọi API, quản lý State & Chart.js
-│   ├── index.html                     # Giao diện Web Dashboard chính
-│   └── style.css                      # Tùy chỉnh CSS giao diện tối hiện đại
-├── notebooks/
-│   ├── 01_explore_data.ipynb          # EDA khám phá dữ liệu Embeat 45M
-│   ├── 02_preprocess_data.ipynb       # Tiền xử lý và chuẩn hóa đặc trưng
-│   ├── 03_train_model.ipynb           # Huấn luyện mô hình streaming
-│   └── 04_evaluate_model.ipynb        # Đánh giá thực nghiệm mô hình
-├── reports/
-│   ├── figures/                       # Thư mục chứa biểu đồ trực quan hóa
-│   ├── evaluation_dashboard.png       # Dashboard tổng hợp đánh giá
-│   ├── evaluation_details.csv         # Chi tiết kết quả đánh giá thực nghiệm
-│   ├── evaluation_summary.csv         # Tóm tắt kết quả đánh giá
-│   └── metrics.json                   # File metrics định lượng của mô hình
-├── src/
-│   ├── download_embeat.py             # Script tải/trích xuất tập dữ liệu mẫu
-│   ├── evaluate.py                    # Script chạy đánh giá mô hình CLI
-│   ├── preprocess.py                  # Module kiểm định chất lượng & tiền xử lý dữ liệu
-│   ├── recommender.py                 # Class EmbeatRecommender cốt lõi
-│   ├── stream_embeat.py               # Module stream Parquet từ Hugging Face
-│   └── train.py                       # Script huấn luyện & xuất artifact
-├── .env.example                       # Mẫu cấu hình biến môi trường
-├── .gitignore                         # Cấu hình bỏ qua file nhạy cảm/rác
-├── music_recommender_project.md       # Master Plan kiến trúc tổng thể Full-Stack
-├── README.md                          # Tài liệu giới thiệu tổng quan dự án
-└── requirements.txt                   # Danh sách thư viện Python phụ thuộc
+│   ├── index.html              # Giao diện
+│   ├── style.css               # CSS bổ sung
+│   └── app.js                  # Gọi API, tương tác, biểu đồ
+├── notebooks/                  # EDA, tiền xử lý, huấn luyện, đánh giá
+├── reports/                    # Kết quả đánh giá và hình minh họa
+├── src/                        # Xử lý dữ liệu, train, evaluate, recommender
+├── .env.example
+├── music_recommender_project.md # Master Plan
+├── requirements.txt
+└── README.md
 ```
-
----
-
-## Hướng dẫn cài đặt & Khởi chạy (Getting Started)
-
-### 1. Cài đặt môi trường & Thư viện
-Yêu cầu Python version **3.10** trở lên.
-
-```bash
-# Clone hoặc tải project về máy, sau đó di chuyển vào thư mục gốc
-cd music_recommender_project
-
-# Cài đặt các thư viện Python yêu cầu
-pip install -r requirements.txt
+4. Hướng dẫn cài đặt và chạy
+Yêu cầu
+Windows và Python 3.12 (phiên bản đã sử dụng trong môi trường demo).
+VS Code với tiện ích Live Server hoặc một HTTP server tĩnh tương đương.
+Kết nối Internet để tải Tailwind CSS, Chart.js và Spotify Embed từ CDN.
+Các file mô hình trong thư mục `artifacts/`.
+Bước 1 — Cài thư viện
+Mở terminal tại thư mục gốc `music_recommender_project`:
+```powershell
+py -3.12 -m pip install -r requirements.txt
 ```
-
-### 2. Khởi động Backend Server (FastAPI)
-```bash
-# Chạy FastAPI server (mặc định hỗ trợ cổng 5000)
-uvicorn backend.app:app --reload --port 5000
+Không cần sử dụng lại thư mục `venv` được tạo trên máy khác.
+Bước 2 — Chạy Backend
+```powershell
+py -3.12 -m uvicorn backend.app:app --reload --port 8000
 ```
-* **Swagger UI Documentation:** `http://127.0.0.1:5000/docs`
-* **API Health Check:** `http://127.0.0.1:5000/api/v1/health`
-
-### 3. Trải nghiệm Frontend
-* Mở tệp `frontend/index.html` trực tiếp bằng trình duyệt hoặc sử dụng tính năng **Live Server** trong VS Code (chạy tại `http://127.0.0.1:5500`).
-* Đảm bảo Backend Server đang chạy để giao diện có thể kết nối và nhận dữ liệu gợi ý từ mô hình AI.
-
+Kiểm tra:
+Health check: http://127.0.0.1:8000/api/v1/health
+Swagger API docs: http://127.0.0.1:8000/docs
+Backend sẵn sàng phục vụ gợi ý khi health check trả về `status: "ok"` và `model_loaded: true`.
+Bước 3 — Chạy Frontend
+Mở thư mục dự án bằng VS Code, sau đó dùng Live Server để mở `frontend/index.html`.
+Ví dụ nếu Live Server phục vụ từ thư mục gốc dự án:
+```text
+http://127.0.0.1:5500/frontend/index.html
+```
+Địa chỉ có thể khác tùy thư mục được mở trong VS Code. Frontend và Backend chạy ở hai cổng khác nhau là bình thường: ví dụ Frontend `5500`, Backend `8000`.
+Trong `frontend/app.js`, địa chỉ API mặc định là `http://127.0.0.1:8000`. Nếu trước đây đã thiết lập `localStorage` với khóa `embeat_api_base`, giá trị đó có thể ghi đè địa chỉ mặc định; cần kiểm tra khi gặp lỗi kết nối.
+5. Danh sách API
+Phương thức	Endpoint	Mục đích
+GET	`/api/v1/health`	Trạng thái Backend và model
+GET	`/api/v1/search?q={keyword}&limit=15`	Tìm bài hát
+GET	`/api/v1/tracks/{track_id}`	Chi tiết bài hát
+GET	`/api/v1/recommend/track/{track_id}?k=10&strategy=hybrid`	Đề xuất theo bài gốc
+GET	`/api/v1/recommend/popular?k=10`	Bài hát phổ biến
+GET	`/api/v1/recommend/mood/{mood_name}?k=10`	Đề xuất theo tâm trạng
+POST	`/api/v1/recommend/profile`	Đề xuất theo tập bài yêu thích
+Ví dụ body của API Taste Profile:
+```json
+{
+  "track_ids": ["spotify_track_id_1", "spotify_track_id_2"],
+  "k": 10,
+  "alpha": 0.7,
+  "exclude_same_artist": false
+}
+```
+Các giá trị `spotify_track_id_1`, `spotify_track_id_2` chỉ là chỗ giữ chỗ; khi sử dụng phải thay bằng ID thật từ kết quả tìm kiếm. Chi tiết tham số và response xem `docs/api_contract.md` và Swagger.
+6. Đặc trưng âm học
+Mô hình sử dụng 9 trường âm học:
+Trường	Ý nghĩa
+`danceability`	Mức độ phù hợp để nhảy
+`energy`	Mức năng lượng/cường độ âm thanh
+`valence`	Sắc thái cảm xúc tích cực của bài hát
+`acousticness`	Mức độ âm học (acoustic)
+`liveness`	Khả năng bản thu có yếu tố biểu diễn trực tiếp
+`speechiness`	Mức độ chứa lời nói
+`instrumentalness`	Khả năng bài hát thiên về nhạc không lời
+`tempo`	Nhịp độ, đơn vị BPM
+`loudness`	Độ lớn âm thanh, đơn vị dB
+Khi hiển thị Radar Chart, các đặc trưng có thang đo khác nhau cần được chuẩn hóa để có thể so sánh trên cùng biểu đồ.
+7. Kịch bản demo
+Chạy Backend ở cổng `8000`, kiểm tra `/api/v1/health`.
+Mở Frontend bằng Live Server và xem Top 10 Popular.
+Tìm một bài hát, chọn Gợi ý AI để nhận danh sách đề xuất.
+Chọn So sánh ở một bài được gợi ý để xem Radar Chart hai bài.
+Chọn một trong sáu Mood được Backend hỗ trợ.
+Thêm vài bài vào Gu âm nhạc, sau đó yêu cầu AI gợi ý theo Profile.
+Thử phát bài hát qua Spotify Embed.
+8. Kiểm thử và tài liệu QA
+`docs/test_plan.md`: test case và kế hoạch kiểm thử.
+`docs/bug_log.md`: các lỗi đã ghi nhận và trạng thái xử lý.
+`backend/tests/test_api.py`: kiểm thử API Backend.
+Hai tài liệu QA đã có trong bản dự án gốc. Khi tích hợp Frontend mới, cần cập nhật kết quả kiểm thử và lỗi phát sinh thay vì mặc định mọi test cũ vẫn còn PASS.
+Một số hiện tượng từng được ghi nhận khi kiểm thử tích hợp: kết quả Mood `calm`/`chill` trùng nhau và một tên bài hát xuất hiện nhiều lần trong gợi ý Profile với các track ID khác nhau. Cần xác minh ở Backend/dữ liệu trước khi kết luận nguyên nhân.
+9. Hạn chế và lưu ý
+Mô hình demo sử dụng tập dữ liệu đã nạp, không tìm kiếm trực tiếp trên toàn bộ 45 triệu bài hát.
+Kết quả Spotify Embed phụ thuộc kết nối mạng và chính sách của Spotify.
+Danh sách yêu thích lưu bằng `localStorage` của trình duyệt hiện tại, không đồng bộ tài khoản giữa các thiết bị.
+Không khẳng định hệ thống đã đạt độ chính xác cụ thể nếu không có số liệu đánh giá tương ứng. Kết quả đánh giá mô hình nằm trong `reports/metrics.json` và các file `evaluation_*`.
+Chạy bằng CDN và Live Server phù hợp demo/học tập; không phải hướng dẫn triển khai production.
+10. Tài liệu liên quan
+`music_recommender_project.md` — kế hoạch tổng thể, phân công và kiến trúc.
+`docs/api_contract.md` — hợp đồng API giữa Frontend và Backend.
+`docs/data_dictionary.md` — từ điển dữ liệu.
+`docs/test_plan.md`, `docs/bug_log.md` — tài liệu QA.
+`backend/README.md` — hướng dẫn riêng cho Backend.
+`reports/metrics.json` — số liệu đánh giá mô hình.
 ---
-
-## 🔗 Danh sách REST API Endpoints
-
-| Method | Endpoint | Mô tả chức năng |
-| :---: | :--- | :--- |
-| `GET` | `/api/v1/health` | Kiểm tra trạng thái server & mô hình ML đang nạp. |
-| `GET` | `/api/v1/search?q={query}` | Tìm kiếm bài hát theo từ khóa và trả về Audio Features. |
-| `GET` | `/api/v1/tracks/{track_id}` | Lấy chi tiết thông tin và 9 đặc trưng âm học của 1 bài hát. |
-| `GET` | `/api/v1/recommend/track/{track_id}` | Gợi ý bài hát tương đồng theo `audio`, `hybrid`, hoặc `mmr`. |
-| `POST` | `/api/v1/recommend/profile` | Gợi ý bài hát dựa trên danh sách nhiều bài trong Gu âm nhạc. |
-| `GET` | `/api/v1/recommend/popular` | Gợi ý bài hát phổ biến nhất (Cold-start baseline). |
-| `GET` | `/api/v1/recommend/mood/{mood_name}` | Gợi ý bài hát theo cảm xúc tâm trạng. |
-
----
-
-## Thành viên nhóm & Phân công nhiệm vụ
-
-* **Senior Data Engineer:** Nguyễn Hoàng — Xây dựng pipeline xử lý dataset 45M bài hát từ Hugging Face, kiểm định và làm sạch dữ liệu.
-* **ML Engineer:** Minh Khoa — Huấn luyện mô hình `EmbeatRecommender`, tối ưu thuật toán gợi ý Cosine Similarity và đánh giá thực nghiệm.
-* **Backend Engineer:** Nhật Minh Phạm — Xây dựng hệ thống REST API bằng FastAPI, Pydantic schemas và viết Unit Test tự động.
-* **Frontend & QA Lead:** Lê Thiện Chí — Phát triển giao diện SPA, tích hợp Spotify Player, Radar Chart, lập kế hoạch kiểm thử (`docs/test_plan.md`) và quản lý lỗi (`docs/bug_log.md`).
-
----
-
-## Nguồn dữ liệu & Giấy phép (Credits & License)
-
-* **Dataset:** `GD-Studio/embeat_45m_spotify_tracks` (Hugging Face Hub) dưới giấy phép **CC-BY-NC 4.0** (Phi thương mại, phục vụ nghiên cứu & học tập).
-* **Player:** Spotify Web Embed API.
