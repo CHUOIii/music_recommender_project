@@ -341,4 +341,4 @@ Các kết quả đánh giá mô hình được lưu trong:
 
 **EmBeat AI — Music Recommender System**
 
-Dự án xây dựng hệ thống gợi ý âm nhạc dựa trên Machine Learning, kết hợp FastAPI và giao diện web để hỗ trợ tìm kiếm, khám phá và đề xuất bài hát theo đặc trưng âm học, tâm trạng và sở thích người dùng.
+
