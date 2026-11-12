@@ -7,257 +7,106 @@
 | Dự án | EmBeat AI – Music Recommender |
 | Tài liệu | Bug Log |
 | Công việc | Task 4.2 – Testing & QA |
-| Ngày tổng hợp | 13/11/2026 |
-| Môi trường | Windows, Microsoft Edge, Python 3.12, FastAPI, Live Server |
+| Người thực hiện | Lê Thiện Chí – FE & QA |
+| Ngày cập nhật | 13/11/2026 |
+| Tài liệu liên quan | `docs/test_plan.md`, `reports/qa_report.md` |
 
-## 2. Quy ước
+## 2. Danh sách lỗi
 
-**Severity**
-
-- Critical: Chức năng chính không thể sử dụng hoặc hệ thống ngừng hoạt động.
-- High: Chức năng quan trọng bị ảnh hưởng đáng kể.
-- Medium: Chức năng vẫn hoạt động nhưng kết quả hoặc trải nghiệm chưa đạt yêu cầu.
-- Low: Lỗi nhỏ về giao diện hoặc thông tin hiển thị.
-
-**Status**
-
-- Fixed: Đã sửa và kiểm tra lại.
-- Open: Đã xác nhận vấn đề, chưa xử lý.
-- Needs Verification: Cần xác minh thêm trước khi kết luận lỗi.
-- Monitoring: Đang theo dõi, chưa xác định là lỗi sản phẩm.
-
-## 3. Danh sách Bug
-
-| ID | Mô tả | Severity | Status | Phụ trách đề xuất |
+| Bug ID | Mô tả lỗi | Mức độ | Trạng thái | Test case liên quan |
 |---|---|---|---|---|
-| BUG-001 | Backend không chạy do thiếu thư viện trong môi trường Python | High | Fixed | Setup/Integration |
-| BUG-002 | 10 bài Popular đều có Popularity bằng 82 | Low | Needs Verification | Backend/Data |
-| BUG-003 | Ảnh bìa trong danh sách bài hát không hiển thị | Medium | Fixed | Frontend |
-| BUG-004 | Now Playing không hiển thị ảnh bìa bài hát | Low | Fixed | Frontend |
-| BUG-005 | Calm và Chill trả về cùng danh sách đề xuất | Medium | Open | Backend/AI |
-| BUG-006 | Taste Profile đề xuất trùng cùng một bài hát | Medium | Open | Backend/Data/AI |
-| BUG-007 | Now Playing che các nút thao tác trong danh sách | Medium | Fixed | Frontend |
+| BUG-001 | Python không tương thích với NumPy | High | FIXED | TC-01 (môi trường chạy) |
+| BUG-002 | Top 10 có cùng giá trị Popularity 82 | Medium | NEEDS VERIFICATION | TC-03 |
+| BUG-003 | Ảnh bìa danh sách không hiển thị | Medium | FIXED | TC-20 |
+| BUG-004 | Ảnh bìa Now Playing không hiển thị | Medium | FIXED | TC-20 |
+| BUG-005 | Calm và Chill trả về cùng danh sách đề xuất | Medium | NEEDS VERIFICATION | TC-10 |
+| BUG-006 | Taste Profile xuất hiện bài hát trùng tên, khác Track ID | Medium | OPEN | TC-13 |
 
-## 4. Chi tiết Bug
+## 3. Chi tiết lỗi
 
-### BUG-001 – Backend không khởi động do môi trường Python
+### BUG-001 – Lỗi môi trường Python
 
-**Severity:** High  
-**Status:** Fixed  
-**Module:** Backend Setup / Environment
+**Hiện tượng:** Backend không chạy đúng do phiên bản Python ban đầu không tương thích với thư viện NumPy.
 
-**Mô tả:** Backend không thể khởi động do môi trường Python đang sử dụng chưa có đầy đủ thư viện cần thiết.
+**Cách xử lý:** Chuyển sang sử dụng Python 3.12 và cài đặt các thư viện tương ứng.
 
-**Cách tái hiện:**
-1. Chạy Backend bằng môi trường Python chưa cài đủ dependencies.
-2. Quan sát lỗi import thư viện, bao gồm NumPy.
+**Kết quả:** Backend đã chạy được, Health API trả về trạng thái hoạt động.
 
-**Kết quả thực tế:** Backend không khởi động thành công.
+**Trạng thái:** FIXED.
 
-**Kết quả mong đợi:** Backend khởi động và tải được mô hình AI.
+### BUG-002 – Giá trị Popularity giống nhau
 
-**Cách khắc phục đã thực hiện:**
-- Sử dụng Python 3.12.
-- Cài các thư viện theo `requirements.txt`.
-- Chạy Backend bằng đúng phiên bản Python.
+**Hiện tượng:** Các bài hát trong Top 10 Popular có cùng giá trị Popularity là 82.
 
-**Kiểm tra lại:** API Health trả về `status: ok`, `model_loaded: true`, với 29.985 tracks.
+**Ảnh hưởng:** Khó đánh giá tính hợp lý của thứ tự xếp hạng chỉ dựa trên Popularity được hiển thị.
 
-**Kết luận:** Đã khắc phục lỗi môi trường. Đây không phải lỗi đã xác nhận trong thuật toán đề xuất.
+**Hướng xử lý:** Kiểm tra dữ liệu nguồn và logic lựa chọn, sắp xếp danh sách Popular.
 
----
+**Trạng thái:** NEEDS VERIFICATION.
 
-### BUG-002 – Popularity của Top 10 đều bằng 82
+### BUG-003 – Ảnh bìa danh sách không hiển thị
 
-**Severity:** Low  
-**Status:** Needs Verification  
-**Module:** Backend / Dataset
+**Hiện tượng:** Một số bài hát không có ảnh bìa trên giao diện danh sách.
 
-**Mô tả:** Danh sách 10 bài hát phổ biến hiển thị cùng giá trị Popularity là 82.
+**Cách xử lý:** Bổ sung cơ chế lấy thông tin ảnh bìa qua Spotify oEmbed.
 
-**Cách tái hiện:**
-1. Mở EmBeat AI.
-2. Xem danh sách Top 10 Popular.
-3. Mở API `/api/v1/recommend/popular?k=10`.
-4. Đối chiếu giá trị `popularity`.
+**Kết quả:** Ảnh bìa đã hiển thị trong lần kiểm thử sau khi chỉnh sửa.
 
-**Kết quả thực tế:** API trả về giá trị Popularity 82 cho cả 10 bài; Frontend hiển thị đúng dữ liệu đó.
+**Trạng thái:** FIXED.
 
-**Kết quả mong đợi:** Danh sách phản ánh đúng dữ liệu và quy tắc xếp hạng Popularity.
+### BUG-004 – Ảnh bìa Now Playing không hiển thị
 
-**Nhận định:** Đây chưa chắc là lỗi. Có thể nhiều bài cùng đạt Popularity 82 trong dataset. Cần xác minh thuật toán chọn Top 10 và dữ liệu nguồn.
+**Hiện tượng:** Khu vực Now Playing không hiển thị ảnh bìa bài hát.
 
-**Đề xuất:** Backend/Data kiểm tra cách sắp xếp và xử lý các bài có cùng điểm Popularity.
+**Cách xử lý:** Điều chỉnh phần xử lý và hiển thị ảnh bìa trong Frontend.
 
----
+**Kết quả:** Ảnh bìa đã hiển thị sau khi sửa.
 
-### BUG-003 – Ảnh bìa trong danh sách không hiển thị
+**Trạng thái:** FIXED.
 
-**Severity:** Medium  
-**Status:** Fixed  
-**Module:** Frontend
+### BUG-005 – Mood Calm và Chill giống nhau
 
-**Mô tả:** Một số thẻ bài hát ban đầu hiển thị chữ thay thế hoặc biểu tượng mặc định thay vì ảnh bìa.
+**Hiện tượng:** Hai Mood Calm và Chill trả về cùng 10 bài hát, cùng thứ tự và điểm tương đồng.
 
-**Kết quả thực tế trước khi sửa:** Ảnh bìa không hiển thị chính xác.
+**Ảnh hưởng:** Kết quả chưa thể hiện sự khác biệt giữa hai lựa chọn tâm trạng trong lần kiểm thử.
 
-**Cách xử lý:** Sử dụng Spotify oEmbed để lấy ảnh bìa và cập nhật hàm hiển thị ảnh trong `app.js`.
+**Hướng xử lý:** Kiểm tra cấu hình Mood, thuật toán và dữ liệu đầu vào của Backend.
 
-**Kiểm tra lại:** Các bài hát trong danh sách Top 10 hiển thị ảnh bìa riêng, không còn lỗi quan sát được.
+**Trạng thái:** NEEDS VERIFICATION.
 
-**Kết luận:** Fixed.
+### BUG-006 – Taste Profile trùng bài hát
 
----
+**Hiện tượng:** Trong kết quả Taste Profile, một bài hát có cùng tên và nghệ sĩ xuất hiện hai lần với Track ID khác nhau.
 
-### BUG-004 – Now Playing không hiển thị ảnh bìa
+**Ảnh hưởng:** Danh sách đề xuất có thể thiếu tính đa dạng.
 
-**Severity:** Low  
-**Status:** Fixed  
-**Module:** Frontend
+**Hướng xử lý:** Kiểm tra dữ liệu nguồn và quy tắc loại trùng. Cần xác định hai Track ID có đại diện cho cùng một bản thu hay không.
 
-**Mô tả:** Khung Now Playing ban đầu chỉ hiển thị biểu tượng âm nhạc mặc định.
+**Trạng thái:** OPEN.
 
-**Kết quả mong đợi:** Now Playing hiển thị ảnh bìa tương ứng với bài hát được chọn.
-
-**Cách xử lý:** Bổ sung xử lý ảnh bìa từ Spotify cho khu vực Now Playing.
-
-**Kiểm tra lại:** Ảnh bìa đã hiển thị trong khung Now Playing.
-
-**Kết luận:** Fixed.
-
----
-
-### BUG-005 – Calm và Chill trả về cùng danh sách đề xuất
-
-**Severity:** Medium  
-**Status:** Open  
-**Module:** Backend / AI Recommendation
-
-**Mô tả:** Hai tâm trạng Calm (Êm dịu) và Chill (Thư giãn) trả về cùng 10 bài hát, cùng thứ tự và cùng điểm tương đồng.
-
-**Cách tái hiện:**
-1. Gọi API `/api/v1/recommend/mood/calm?k=10`.
-2. Gọi API `/api/v1/recommend/mood/chill?k=10`.
-3. So sánh `track_id` và `similarity_score` của hai kết quả.
-
-**Kết quả thực tế:**
-- API trả về hai `mode` khác nhau: `mood_calm` và `mood_chill`.
-- Danh sách 10 bài hát giống nhau.
-- Thứ tự và điểm tương đồng giống nhau.
-
-**Kết quả mong đợi:** Mỗi mood được xử lý theo cấu hình đã thiết kế và phản ánh đúng đặc điểm tâm trạng tương ứng.
-
-**Phạm vi xác nhận:** Đã xác nhận hai API trả kết quả giống nhau. Chưa xác minh nguyên nhân nội bộ.
-
-**Nguyên nhân cần kiểm tra:**
-- Cấu hình đặc trưng âm học của Calm và Chill.
-- Vector đại diện cho từng mood.
-- Logic lọc và xếp hạng kết quả.
-- Khả năng hai mood có cấu hình trùng nhau.
-
-**Đề xuất:** Backend/AI kiểm tra cấu hình và thuật toán. Không sửa Frontend để tạo khác biệt giả.
-
-**Kiểm thử lại sau khi sửa:** Gọi lại hai API, đối chiếu kết quả và kiểm tra chúng có phù hợp với thiết kế mood hay không.
-
----
-
-### BUG-006 – Taste Profile đề xuất trùng bài hát
-
-**Severity:** Medium  
-**Status:** Open  
-**Module:** Backend / Dataset / AI Recommendation
-
-**Mô tả:** Trong danh sách 10 bài Taste Profile, bài `twilight zone – Ariana Grande` xuất hiện ở hai vị trí khác nhau.
-
-**Cách tái hiện:**
-1. Thêm 5 bài hát vào Favorites.
-2. Nhấn “Gợi ý theo gu âm nhạc”.
-3. Quan sát danh sách 10 bài được đề xuất.
-4. Phát bài ở vị trí 03 và 05.
-5. Gọi API `POST /api/v1/recommend/profile` với cùng 5 `track_id`.
-6. Đối chiếu hai bản ghi `twilight zone`.
-
-**Kết quả thực tế:**
-- Cả hai vị trí đều hiển thị `twilight zone – Ariana Grande`.
-- Người kiểm thử xác nhận hai vị trí phát cùng một bài nhạc.
-- API trả về hai `track_id` khác nhau.
-- Hai bản ghi có Popularity và Similarity khác nhau.
-
-**Kết quả mong đợi:** Danh sách đề xuất không lặp lại cùng một bản nhạc thực tế, nếu yêu cầu sản phẩm là đề xuất các bài độc nhất.
-
-**Nguyên nhân nghi vấn:** Dataset chứa nhiều bản ghi hoặc phiên bản của cùng một bài, và thuật toán chưa loại trùng theo định danh bài hát thực tế.
-
-**Đề xuất:**
-- Kiểm tra dữ liệu trùng trong dataset.
-- Kiểm tra Spotify Track ID và phiên bản bài hát.
-- Xem xét loại trùng trong danh sách đề xuất sau khi xếp hạng.
-- Không chỉ dựa vào `track_id` nếu dữ liệu có nhiều bản ghi cho cùng bản nhạc.
-
-**Kiểm thử lại sau khi sửa:** Tạo Taste Profile bằng cùng 5 bài yêu thích, kiểm tra Top 10 không còn lặp bản nhạc thực tế.
-
----
-
-### BUG-007 – Now Playing che các nút thao tác
-
-**Severity:** Medium  
-**Status:** Fixed  
-**Module:** Frontend / CSS
-
-**Mô tả:** Khung Now Playing chồng lên khu vực danh sách bài hát, khiến một số nút thao tác bị che.
-
-**Cách tái hiện:**
-1. Mở trang Khám phá.
-2. Chọn một mood để hiển thị danh sách đề xuất.
-3. Quan sát khu vực tiếp giáp giữa danh sách và Now Playing.
-
-**Kết quả thực tế trước khi sửa:** Khung Now Playing che một phần các nút trong danh sách.
-
-**Kết quả mong đợi:** Hai cột được bố trí độc lập, không chồng lấp.
-
-**Cách xử lý:** Điều chỉnh CSS giới hạn chiều rộng của `.result-layout`, `.track-list`, `.track` và `.player-panel`.
-
-**Kiểm tra lại:** Người kiểm thử xác nhận các nút thao tác đã hiển thị đầy đủ sau khi cập nhật CSS.
-
-**Kết luận:** Fixed.
-
-## 5. Tổng hợp Bug
+## 4. Thống kê lỗi
 
 | Trạng thái | Số lượng |
 |---|---:|
-| Fixed | 4 |
-| Open | 2 |
-| Needs Verification | 1 |
-| **Tổng cộng** | **7** |
+| FIXED | 3 |
+| NEEDS VERIFICATION | 2 |
+| OPEN | 1 |
+| **Tổng cộng** | **6** |
 
-## 6. Phân công xử lý đề xuất
+## 5. Đánh giá
 
-**Frontend / QA**
-- Duy trì các bản sửa ảnh bìa và bố cục Now Playing.
-- Kiểm thử hồi quy sau khi Backend thay đổi.
-- Cập nhật kết quả trong Test Plan và Bug Log.
+Các lỗi liên quan đến môi trường chạy và hiển thị ảnh bìa đã được xử lý.
 
-**Backend / AI**
-- Kiểm tra cấu hình Calm và Chill.
-- Kiểm tra việc loại trùng trong Taste Profile.
-- Xác minh quy tắc xếp hạng Popular Top 10.
+Ba vấn đề còn cần theo dõi liên quan đến Popularity, kết quả Mood và khả năng trùng bài hát trong Taste Profile.
 
-## 7. Regression Testing
+Những vấn đề này cần được xác minh thêm với nhóm Backend/AI hoặc xử lý dữ liệu trước khi cập nhật trạng thái hoàn thành.
 
-Sau khi các lỗi còn mở được xử lý, cần kiểm tra lại:
+## 6. Kết luận
 
-- Search và Popular Top 10.
-- Recommend Track.
-- Cả 6 mood.
-- Taste Profile với cùng dữ liệu đầu vào đã phát hiện lỗi.
-- Spotify Player và ảnh bìa.
-- Radar Chart.
-- Loading, Empty và Error.
-- Bố cục desktop và responsive.
+Bug Log ghi nhận 6 lỗi và vấn đề phát hiện trong quá trình kiểm thử EmBeat AI.
 
-## 8. Kết luận
+Trong đó, 3 lỗi đã được xử lý, 2 vấn đề cần xác minh và 1 vấn đề vẫn đang mở.
 
-Đã ghi nhận 7 vấn đề trong quá trình triển khai và kiểm thử EmBeat AI.
+Tài liệu sẽ được cập nhật khi nhóm có kết quả xử lý và kiểm thử lại.
 
-Trong đó, 4 vấn đề đã được khắc phục và xác nhận lại; 2 vấn đề về kết quả đề xuất còn mở; 1 vấn đề về Popularity cần xác minh.
-
-Frontend đã xử lý các lỗi giao diện quan sát được. Những vấn đề liên quan đến dữ liệu và thuật toán cần được chuyển cho thành viên Backend/AI kiểm tra trước khi nghiệm thu cuối cùng.
+---

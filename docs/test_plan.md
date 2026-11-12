@@ -7,6 +7,7 @@
 | Dự án | EmBeat AI – Music Recommender |
 | Tài liệu | Test Plan |
 | Công việc | Task 4.2 – Testing & QA |
+| Người thực hiện | Lê Thiện Chí – Frontend & QA |
 | Phạm vi | Frontend, API Integration, Recommendation, UI/UX |
 | Môi trường | Windows, Microsoft Edge, VS Code Live Server |
 | Frontend | `http://127.0.0.1:5500/frontend/index.html` |
@@ -14,173 +15,244 @@
 | API Documentation | `http://127.0.0.1:8000/docs` |
 | Ngày tổng hợp | 13/11/2026 |
 
+---
+
 ## 2. Mục tiêu kiểm thử
 
-Kiểm tra các chức năng chính của EmBeat AI, bao gồm:
+Kiểm tra các chức năng chính của EmBeat AI nhằm đảm bảo Frontend hoạt động và tích hợp đúng với Backend.
 
-- Tìm kiếm bài hát theo từ khóa.
-- Hiển thị danh sách bài hát phổ biến Top 10.
-- Gợi ý bài hát tương tự bằng AI.
-- Gợi ý theo tâm trạng (Mood Recommendation).
-- Gợi ý theo sở thích cá nhân (Taste Profile).
-- Phát nhạc qua Spotify Embed.
-- Quản lý thư viện yêu thích.
-- Vẽ biểu đồ phân tích và so sánh đặc trưng âm nhạc Radar.
-- Xử lý mượt mà trạng thái Loading, Empty và Error.
-- Kiểm tra khả năng hiển thị và tương tác giao diện.
+Các nội dung kiểm thử gồm:
+
+- Kết nối Backend và gọi API.
+- Hiển thị Top 10 Popular.
+- Tìm kiếm bài hát.
+- Gợi ý AI theo bài hát.
+- Gợi ý theo tâm trạng.
+- Gợi ý theo danh sách yêu thích.
+- Thêm và quản lý Favorites.
+- Phát nhạc bằng Spotify Embed.
+- Phân tích đặc trưng âm nhạc bằng Radar Chart.
+- Xử lý trạng thái Loading, Empty và Error.
+- Kiểm tra giao diện và khả năng tương tác.
+
+Việc kiểm thử tập trung vào các chức năng đã được triển khai trong phiên bản Frontend hiện tại.
+
+---
 
 ## 3. Phương pháp kiểm thử
 
-**Functional Testing:** Kiểm tra chức năng dựa trên thao tác người dùng và kết quả mong đợi.
+**Functional Testing:** Thao tác trực tiếp trên giao diện để kiểm tra kết quả thực tế.
 
-**API Testing:** Kiểm tra dữ liệu trả về từ Backend bằng trình duyệt và Swagger UI.
+**API Integration Testing:** Kiểm tra Frontend có gửi yêu cầu đến đúng API và nhận dữ liệu từ Backend.
 
-**UI Testing:** Kiểm tra giao diện, danh sách bài hát, ảnh bìa, các nút thao tác và bố cục.
+**UI Testing:** Kiểm tra danh sách bài hát, ảnh bìa, biểu đồ, nút thao tác và bố cục.
 
-**Negative Testing:** Kiểm tra tìm kiếm không có kết quả, Backend mất kết nối và các trường hợp dữ liệu không hợp lệ.
+**Negative Testing:** Kiểm tra trường hợp không có kết quả hoặc Backend mất kết nối.
 
-**Integration Testing:** Kiểm tra luồng dữ liệu từ Frontend đến Backend và dịch vụ Spotify.
+**Regression Testing:** Kiểm tra lại các chức năng liên quan sau khi sửa lỗi.
 
-**Regression Testing:** Kiểm tra lại chức năng sau khi sửa lỗi.
+### Quy ước trạng thái
 
-## 4. Test Cases
+| Trạng thái | Ý nghĩa |
+|---|---|
+| PASS | Đã kiểm thử và đạt kết quả mong đợi |
+| PARTIAL | Chức năng hoạt động nhưng còn vấn đề |
+| FAIL | Đã kiểm thử và không đạt kết quả mong đợi |
+| NEEDS VERIFICATION | Có dữ liệu hoặc dấu hiệu cần xác minh thêm |
+| NOT TESTED | Chưa thực hiện kiểm thử thực tế |
 
-### A. Backend và API
+---
 
-| ID | Test case | Kết quả mong đợi | Trạng thái |
-|---|---|---|---|
-| TC-01 | Kiểm tra Backend Health | API trả `status: ok`, model được tải thành công | PASS |
-| TC-02 | Kiểm tra Popular Top 10 | Trả về 10 bài hát và hiển thị đầy đủ | PASS |
-| TC-03 | Kiểm tra API Search | Tìm kiếm trả về dữ liệu phù hợp từ Backend | PASS |
-| TC-04 | Kiểm tra API Recommend Track | Trả về danh sách bài hát tương tự | PASS |
-| TC-05 | Kiểm tra API Recommend Mood | Các mood trả về kết quả phù hợp | PARTIAL |
-| TC-06 | Kiểm tra API Taste Profile | Nhận nhiều `track_id` và trả về danh sách đề xuất | PARTIAL |
-| TC-07 | Kiểm tra API khi tham số không hợp lệ | Backend trả mã lỗi và thông báo phù hợp | NOT TESTED |
+## 4. Danh sách Test Case
 
-### B. Search và Popular Songs
+### A. Backend, Search và Popular
 
 | ID | Test case | Kết quả mong đợi | Trạng thái |
 |---|---|---|---|
-| TC-08 | Tìm kiếm theo tên nghệ sĩ | Trả về bài hát liên quan đến nghệ sĩ | PASS |
-| TC-09 | Tìm kiếm theo tên bài hát | Trả về bài hát phù hợp | NOT TESTED |
-| TC-10 | Tìm kiếm từ khóa không tồn tại | Hiển thị thông báo không tìm thấy | PASS |
-| TC-11 | Kiểm tra giới hạn kết quả Search | Danh sách không vượt quá giới hạn API | PASS |
-| TC-12 | Kiểm tra Top 10 Popular | Hiển thị đủ 10 bài, đúng thứ tự | PASS |
-| TC-13 | Kiểm tra giá trị Popularity | Dữ liệu hiển thị đúng API, ranking cần xác minh | NEEDS VERIFICATION |
+| TC-01 | Kiểm tra Backend Health | API trả về `status: ok`, mô hình được nạp | PASS |
+| TC-02 | Hiển thị Top 10 Popular | Hiển thị danh sách 10 bài hát từ API | PASS |
+| TC-03 | Kiểm tra Popularity | Dữ liệu và thứ tự xếp hạng hợp lý | NEEDS VERIFICATION |
+| TC-04 | Tìm kiếm theo nghệ sĩ | Trả về các bài hát liên quan đến nghệ sĩ | PASS |
+| TC-05 | Tìm kiếm không có kết quả | Hiển thị thông báo không tìm thấy bài hát | PASS |
+| TC-06 | Kiểm tra giới hạn Search | Số kết quả không vượt quá giới hạn yêu cầu | PASS |
 
-### C. AI Recommendation
+**Kết quả ghi nhận:**
 
-| ID | Test case | Kết quả mong đợi | Trạng thái |
-|---|---|---|---|
-| TC-14 | Gợi ý AI từ một bài hát | Hiển thị 10 bài tương tự | PASS |
-| TC-15 | Hiển thị Similarity/Match | Có điểm tương đồng cho từng bài | PASS |
-| TC-16 | Chuyển từ bài gốc sang danh sách gợi ý | Danh sách được cập nhật đúng | PASS |
-| TC-17 | Kiểm tra kết quả trùng bài | Không lặp cùng một bản nhạc trong Top 10 | NOT TESTED |
-| TC-18 | Kiểm tra thao tác cuộn khi gợi ý | Người dùng dễ tiếp cận danh sách kết quả | NEEDS VERIFICATION |
+- Backend đã trả về `status: ok` và `model_loaded: true`.
+- Số bài hát được nạp trong lần kiểm thử là 29.985.
+- Tìm kiếm Taylor Swift trả về danh sách kết quả.
+- Tìm kiếm từ khóa không tồn tại hiển thị Empty State.
+- Top 10 hiển thị đủ bài hát, nhưng các bài từng có cùng giá trị Popularity 82.
 
-### D. Mood Recommendation
+**Vấn đề liên quan:** BUG-002.
 
-| ID | Test case | Kết quả mong đợi | Trạng thái |
-|---|---|---|---|
-| TC-19 | Chọn Happy | Trả về 10 bài theo mood Happy | PASS |
-| TC-20 | Chọn Sad | Trả về danh sách theo mood Sad | NOT TESTED |
-| TC-21 | Chọn Calm | Trả về danh sách theo mood Calm | PARTIAL |
-| TC-22 | Chọn Chill | Trả về danh sách theo mood Chill | PARTIAL |
-| TC-23 | Chọn Energetic | Trả về danh sách theo mood Energetic | NOT TESTED |
-| TC-24 | Chọn Focus | Trả về danh sách theo mood Focus | NOT TESTED |
-| TC-25 | So sánh Calm và Chill | Hai mood được xử lý theo cấu hình phù hợp | NEEDS VERIFICATION |
-
-**Ghi nhận:** Calm và Chill trả về cùng 10 bài hát, cùng thứ tự và điểm tương đồng. Cần Backend/AI xác minh.
-
-### E. Spotify Player
+### B. AI Recommendation và Mood
 
 | ID | Test case | Kết quả mong đợi | Trạng thái |
 |---|---|---|---|
-| TC-26 | Nhấn Nghe một bài hát | Spotify Embed hiển thị và phát được nhạc | PASS |
-| TC-27 | Chuyển sang bài khác | Now Playing cập nhật đúng bài được chọn | NOT TESTED |
-| TC-28 | Kiểm tra ảnh bìa Now Playing | Hiển thị ảnh bìa bài hát | PASS |
-| TC-29 | Kiểm tra Spotify Embed bị giới hạn phát | Giao diện không bị lỗi khi Spotify hạn chế phát | PARTIAL |
-| TC-30 | Kiểm tra bài không có Spotify Embed | Hiển thị trạng thái thay thế phù hợp | NOT TESTED |
+| TC-07 | Gợi ý AI theo bài hát | Trả về danh sách bài hát tương tự | PASS |
+| TC-08 | Hiển thị Similarity/Match | Hiển thị điểm tương đồng từ kết quả API | PASS |
+| TC-09 | Gợi ý theo Happy Mood | Hiển thị danh sách gợi ý từ Mood API | PASS |
+| TC-10 | Kiểm tra Calm và Chill | Hai Mood được xử lý theo cấu hình tương ứng | PARTIAL |
+| TC-11 | Kiểm tra các Mood còn lại | Sad, Energetic và Focus trả về kết quả | PASS |
 
-### F. Favorites và Taste Profile
+**Kết quả ghi nhận:**
 
-| ID | Test case | Kết quả mong đợi | Trạng thái |
-|---|---|---|---|
-| TC-31 | Thêm bài hát yêu thích | Bài hát xuất hiện trong thư viện | PASS |
-| TC-32 | Hiển thị danh sách Favorites | Đúng bài hát, nghệ sĩ, ảnh bìa | PASS |
-| TC-33 | Xóa một bài khỏi Favorites | Bài hát được xóa khỏi danh sách | NOT TESTED |
-| TC-34 | Xóa toàn bộ Favorites | Danh sách trở về trạng thái rỗng | NOT TESTED |
-| TC-35 | Reload trang sau khi lưu Favorites | Dữ liệu vẫn được lưu | NOT TESTED |
-| TC-36 | Tạo Taste Profile từ nhiều bài | Backend tạo và hiển thị 10 bài đề xuất | PASS |
-| TC-37 | Kiểm tra Taste Profile trùng bài | Không lặp cùng một bản nhạc trong kết quả | FAIL |
-| TC-38 | Tạo Taste Profile khi chưa có Favorites | Hiển thị hướng dẫn hoặc thông báo phù hợp | NOT TESTED |
+- Frontend đã gọi API gợi ý theo bài hát.
+- Danh sách đề xuất và điểm tương đồng được hiển thị.
+- Happy, Sad, Energetic và Focus Mood đã được kiểm thử.
+- Calm và Chill từng trả về cùng 10 bài hát, cùng thứ tự và điểm tương đồng.
 
-### G. Radar Chart và Music Analysis
+**Vấn đề liên quan:** BUG-005.
+
+### C. Favorites và Taste Profile
 
 | ID | Test case | Kết quả mong đợi | Trạng thái |
 |---|---|---|---|
-| TC-39 | Mở chức năng So sánh | Chuyển đến giao diện phân tích | PASS |
-| TC-40 | Hiển thị Radar Chart | Biểu đồ hiển thị hai bài hát | PASS |
-| TC-41 | Hiển thị 9 đặc trưng âm nhạc | Có đầy đủ các thông số | PASS |
-| TC-42 | Phân biệt hai bài bằng màu sắc | Hai bộ dữ liệu có màu và chú thích riêng | PASS |
-| TC-43 | Kiểm tra đơn vị Tempo và Loudness | Hiển thị BPM và dB | PASS |
-| TC-44 | Đối chiếu giá trị Radar với API | Giá trị trên giao diện khớp Backend | NOT TESTED |
+| TC-12 | Tạo Taste Profile | Gửi nhiều Track ID lên Backend và nhận đề xuất | PASS |
+| TC-13 | Kiểm tra bài trùng trong Profile | Không xuất hiện cùng một bản nhạc nhiều lần | FAIL |
+| TC-14 | Thêm bài hát yêu thích | Bài hát được thêm vào Favorites | PASS |
+| TC-15 | Hiển thị Favorites | Danh sách hiển thị bài hát đã lưu | PASS |
+| TC-16 | Xóa bài hát yêu thích | Bài hát được xóa khỏi Favorites | PASS |
+| TC-17 | Kiểm tra lưu Favorites | Dữ liệu vẫn còn sau khi tải lại trang | PASS |
+| TC-18 | Xóa toàn bộ Favorites | Danh sách trở về trạng thái rỗng | PASS |
 
-### H. Loading, Empty và Error States
+**Kết quả ghi nhận:**
+
+- Frontend có chức năng lưu Favorites bằng `localStorage`.
+- Taste Profile gửi danh sách Track ID lên API `/api/v1/recommend/profile`.
+- Kết quả Profile đã hiển thị danh sách bài hát đề xuất.
+- Trong một lần kiểm thử, bài hát có cùng tên và nghệ sĩ xuất hiện với hai Track ID khác nhau.
+- Các thao tác xóa Favorites và kiểm tra dữ liệu sau khi tải lại trang trả về kết quả tương ứng.
+
+**Vấn đề liên quan:** BUG-006.
+
+### D. Spotify Player và Radar Chart
 
 | ID | Test case | Kết quả mong đợi | Trạng thái |
 |---|---|---|---|
-| TC-45 | Giả lập mạng chậm | Hiển thị trạng thái đang tải | PASS |
-| TC-46 | Search không có kết quả | Hiển thị Empty State | PASS |
-| TC-47 | Tắt Backend rồi tìm kiếm | Hiển thị thông báo lỗi kết nối | PASS |
-| TC-48 | Backend hoạt động trở lại | Frontend kết nối lại và tiếp tục hoạt động | PASS |
-| TC-49 | Kiểm tra trạng thái lỗi trên các API khác | Có thông báo lỗi phù hợp | NOT TESTED |
+| TC-19 | Phát nhạc bằng Spotify Embed | Trình phát xuất hiện và phát được nhạc | PASS |
+| TC-20 | Hiển thị ảnh bìa | Ảnh bìa danh sách và Now Playing hiển thị | PASS |
+| TC-21 | Hiển thị đặc trưng âm học | Có đủ 9 thông số âm nhạc | PASS |
+| TC-22 | So sánh hai bài trên Radar Chart | Hiển thị hai bộ dữ liệu trên cùng biểu đồ | NEEDS VERIFICATION |
+| TC-23 | Bài hát không có Spotify Embed | Giao diện xử lý trường hợp thiếu Embed | PASS |
 
-### I. UI/UX và Responsive
+**Kết quả ghi nhận:**
+
+- Spotify Embed đã được kiểm tra và hoạt động.
+- Lỗi ảnh bìa từng xuất hiện và đã được sửa.
+- Radar Chart đã hiển thị các đặc trưng âm học.
+- Phiên bản Frontend mới có logic hỗ trợ hai bộ dữ liệu Radar, nhưng cần xác nhận lại thao tác so sánh trực tiếp trên trình duyệt.
+- Trường hợp bài hát không có Spotify Embed trả về không tìm thấy bài hát.
+
+**Vấn đề liên quan:** BUG-003 và BUG-004 đã được xử lý.
+
+### E. Loading, Error và giao diện
 
 | ID | Test case | Kết quả mong đợi | Trạng thái |
 |---|---|---|---|
-| TC-50 | Kiểm tra ảnh bìa danh sách | Ảnh hiển thị đúng, không bị lỗi | PASS |
-| TC-51 | Kiểm tra bố cục Now Playing | Không che các nút thao tác | PASS sau sửa |
-| TC-52 | Kiểm tra giao diện desktop | Không tràn, chồng lấp thành phần | PARTIAL |
-| TC-53 | Kiểm tra giao diện tablet | Bố cục tự điều chỉnh phù hợp | NOT TESTED |
-| TC-54 | Kiểm tra giao diện mobile | Không tràn ngang, thao tác được | NOT TESTED |
-| TC-55 | Kiểm tra trạng thái active menu | Menu hiển thị đúng trang đang chọn | NOT TESTED |
-| TC-56 | Kiểm tra thông báo Toast | Thông báo xuất hiện và không che nội dung quan trọng | PARTIAL |
-| TC-57 | Kiểm tra bàn phím và focus | Có thể thao tác bằng bàn phím | NOT TESTED |
+| TC-24 | Giả lập mạng chậm | Hiển thị trạng thái Loading | PASS |
+| TC-25 | Tắt Backend khi tìm kiếm | Hiển thị thông báo lỗi kết nối | PASS |
+| TC-26 | Khởi động lại Backend | Frontend tiếp tục kết nối và hoạt động | PASS |
+| TC-27 | Kiểm tra giao diện desktop | Bố cục và thao tác hiển thị phù hợp | PARTIAL |
+| TC-28 | Kiểm tra giao diện mobile | Không tràn ngang, thao tác sử dụng được | NOT TESTED |
+
+**Kết quả ghi nhận:**
+
+- Loading State đã được kiểm tra bằng chế độ mạng chậm.
+- Frontend hiển thị thông báo lỗi khi Backend không hoạt động.
+- Frontend tiếp tục kết nối được sau khi Backend được khởi động lại.
+- Bố cục Now Playing từng được chỉnh sửa để tránh che các nút thao tác.
+- Chưa hoàn tất đánh giá giao diện trên nhiều kích thước màn hình.
+
+---
 
 ## 5. Tổng hợp kết quả
 
 | Trạng thái | Số lượng |
 |---|---:|
-| PASS | 29 |
-| PASS sau sửa | 1 |
-| PARTIAL | 6 |
+| PASS | 22 |
+| PARTIAL | 2 |
 | FAIL | 1 |
-| NEEDS VERIFICATION | 3 |
-| NOT TESTED | 17 |
-| **Tổng cộng** | **57** |
+| NEEDS VERIFICATION | 2 |
+| NOT TESTED | 1 |
+| **Tổng cộng** | **28** |
 
-*Lưu ý: PASS phản ánh những hành vi đã quan sát được trong quá trình kiểm thử, không có nghĩa toàn bộ logic nội bộ đã được xác minh. Các trường hợp cần kiểm tra thêm không được tính là PASS.*
+### Nhận xét
 
-## 6. Các vấn đề cần theo dõi
+Trong 28 test case được lựa chọn:
 
-| Bug ID | Vấn đề | Phụ trách đề xuất |
+- 22 test case đã đạt kết quả mong đợi.
+- 2 test case hoạt động một phần nhưng còn vấn đề.
+- 1 test case không đạt yêu cầu.
+- 2 test case cần xác minh thêm.
+- 1 test case chưa được kiểm thử.
+
+
+---
+
+## 6. Tổng hợp lỗi
+
+| Bug ID | Mô tả | Tình trạng |
 |---|---|---|
-| BUG-002 | Top 10 có cùng Popularity 82 | Backend/Data |
-| BUG-005 | Calm và Chill trả về danh sách giống hệt nhau | Backend/AI |
-| BUG-006 | Taste Profile có hai bản ghi cùng bài hát | Backend/Data/AI |
+| BUG-001 | Python không tương thích với NumPy | Đã xử lý bằng Python 3.12 |
+| BUG-002 | Top 10 có cùng Popularity 82 | Cần xác minh |
+| BUG-003 | Ảnh bìa danh sách không hiển thị | Đã sửa |
+| BUG-004 | Ảnh bìa Now Playing không hiển thị | Đã sửa |
+| BUG-005 | Calm và Chill trả về cùng danh sách | Cần xác minh |
+| BUG-006 | Taste Profile có bài hát trùng tên, khác Track ID | Chưa xử lý dứt điểm |
 
-Các lỗi ảnh bìa và bố cục Now Playing đã được sửa và kiểm tra lại.
+Các vấn đề liên quan đến dữ liệu và kết quả AI cần được nhóm Backend/AI xác minh thêm trước khi kết luận nguyên nhân.
+
+---
 
 ## 7. Đánh giá
 
-Frontend đã hoạt động đối với các luồng chính gồm Search, Top 10, AI Recommendation, Spotify Player, Favorites, Taste Profile, Radar Chart và xử lý Loading/Empty/Error.
+### Những phần đã hoạt động
 
-Các vấn đề còn lại tập trung vào tính hợp lý của dữ liệu đề xuất và logic xử lý ở Backend/AI. Một số trường hợp về responsive, thao tác thư viện và dữ liệu biên chưa được kiểm thử.
+- Kết nối Frontend với Backend.
+- Tìm kiếm bài hát.
+- Hiển thị Top 10 Popular.
+- Gợi ý bài hát tương tự.
+- Gợi ý theo Happy Mood.
+- Tạo Taste Profile từ Favorites.
+- Phát nhạc bằng Spotify Embed.
+- Hiển thị ảnh bìa và đặc trưng âm học.
+- Xử lý Loading, Empty và Error.
+
+### Những phần cần hoàn thiện
+
+- Kiểm tra Popularity và cách xếp hạng Top 10.
+- Xác minh kết quả Calm và Chill.
+- Xử lý trường hợp bài hát trùng trong Taste Profile.
+- Xác nhận Radar Chart hiển thị đồng thời hai bài.
+- Kiểm tra giao diện mobile.
+- Thực hiện regression test sau khi sửa lỗi.
+
+---
 
 ## 8. Kết luận
 
-Task 4.2 đã có kết quả kiểm thử thực tế cho các chức năng chính và danh sách các trường hợp cần kiểm tra bổ sung.
+Trong quá trình thực hiện Task 4.2 – Testing & QA, tôi đã kiểm thử các chức năng chính của EmBeat AI, tập trung vào Frontend, tích hợp API và trải nghiệm người dùng.
 
-Trước khi nghiệm thu cuối cùng, nhóm cần xác minh các vấn đề còn mở, thực hiện regression test sau khi sửa và cập nhật lại trạng thái trong tài liệu.
+Test Plan gồm 28 test case được lựa chọn dựa trên các chức năng thực tế của dự án và những kết quả kiểm thử đã ghi nhận.
+
+Kết quả cho thấy hệ thống đã có thể thực hiện các luồng chính phục vụ demo. Tuy nhiên, vẫn còn một số vấn đề liên quan đến dữ liệu đề xuất, kết quả Mood và Taste Profile cần tiếp tục kiểm tra.
+
+Các test case chưa thực hiện hoặc chưa xác minh được giữ nguyên trạng thái để nhóm tiếp tục theo dõi, thay vì đánh dấu hoàn thành khi chưa có kết quả thực tế.
+
+Trước khi nghiệm thu cuối cùng, nhóm cần xử lý các lỗi còn mở, kiểm thử bổ sung và cập nhật lại tài liệu QA.
+
+---
+
+## 9. Tài liệu liên quan
+
+- `docs/bug_log.md` – Nhật ký lỗi.
+- `docs/api_contract.md` – Đặc tả API.
+- `frontend/app.js` – Logic Frontend và tích hợp API.
+- `frontend/index.html` – Cấu trúc giao diện.
+- `frontend/style.css` – Giao diện và bố cục.
+- `backend/tests/test_api.py` – Kiểm thử API Backend.
+- `README.md` – Hướng dẫn sử dụng dự án.
+
+---
