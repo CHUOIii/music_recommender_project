@@ -4,194 +4,455 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#090b12">
-  <title>EmBeat AI | Music Recommender</title>
-
+  <meta name="theme-color" content="#0a0d15">
+  <title>EmBeat | Music Discovery</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <!-- Master Plan E1: Tailwind CSS CDN -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css">
   <script src="app.js" defer></script>
 </head>
-
-<body class="bg-[#090b12] text-[#f5f6fb]">
-  <div class="app flex min-h-screen">
-
-    <aside class="sidebar sticky top-0 flex h-screen w-[245px] shrink-0 flex-col border-r border-[#282e3d] bg-[#0e111b] px-[18px] py-[30px] max-[850px]:w-[76px] max-[850px]:px-3 max-[850px]:py-[22px] max-[560px]:hidden">
-      <a class="brand mb-[54px] flex items-center gap-[10px] text-[23px] font-extrabold tracking-tight max-[850px]:justify-center" href="#">
-        <span class="brand-icon grid h-[39px] w-[39px] shrink-0 place-items-center rounded-xl bg-[#43e3a0] text-[25px] text-[#07150f]">♫</span>
-        <span class="max-[850px]:hidden">EmBeat <b>AI</b></span>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Điều hướng">
+      <a href="#home" class="brand" id="brandHome">
+        <span class="brand-mark">♫</span>
+        <span class="brand-word">
+          Em<span>Beat</span>
+          <small>YOUR MUSIC UNIVERSE</small>
+        </span>
       </a>
 
-      <p class="side-label px-[14px] text-[10px] font-extrabold tracking-[1.5px] text-[#626c80] max-[850px]:hidden">KHÁM PHÁ</p>
-
-      <nav class="navigation grid gap-2">
-        <button class="nav-btn active flex w-full items-center gap-[14px] rounded-xl p-[15px] text-left text-[15px] text-[#929aac] hover:bg-[#1b2c2a] hover:text-[#43e3a0] max-[850px]:justify-center max-[850px]:text-2xl" data-view="home">
-          ⌂ <span class="max-[850px]:hidden">Khám phá</span>
+      <p class="nav-caption">KHÁM PHÁ</p>
+      <nav class="side-nav">
+        <button class="nav-link active" data-view="home">
+          <span class="nav-icon">◈</span>Khám phá
         </button>
-        <button class="nav-btn flex w-full items-center gap-[14px] rounded-xl p-[15px] text-left text-[15px] text-[#929aac] hover:bg-[#1b2c2a] hover:text-[#43e3a0] max-[850px]:justify-center max-[850px]:text-2xl" data-view="favorites">
-          ♡ <span class="max-[850px]:hidden">Thư viện yêu thích</span>
+        <button class="nav-link" data-view="favorites">
+          <span class="nav-icon">♡</span>Yêu thích
+          <span id="favCount" class="nav-counter">0</span>
         </button>
-        <button class="nav-btn flex w-full items-center gap-[14px] rounded-xl p-[15px] text-left text-[15px] text-[#929aac] hover:bg-[#1b2c2a] hover:text-[#43e3a0] max-[850px]:justify-center max-[850px]:text-2xl" data-view="analysis">
-          ◈ <span class="max-[850px]:hidden">Phân tích âm nhạc</span>
+        <button class="nav-link" data-view="analysis">
+          <span class="nav-icon">◎</span>Phân tích Radar
         </button>
       </nav>
 
-      <div class="sidebar-bottom mt-auto text-[11px] leading-7 text-[#929aac] max-[850px]:hidden">
-        <span class="status-dot"></span>
-        <span id="serverStatus">Đang kiểm tra Backend...</span>
-        <p>AI Music Recommendation System</p>
+      <p class="nav-caption second">LỐI TẮT</p>
+      <nav class="side-nav">
+        <button class="nav-link" id="sidePopular">
+          <span class="nav-icon">♬</span>Phổ biến
+        </button>
+        <button class="nav-link" id="sideSearch">
+          <span class="nav-icon">⌕</span>Tìm bài hát
+        </button>
+      </nav>
+
+      <div class="sidebar-foot">
+        <div class="connection-card">
+          <span id="connectionDot" class="connection-dot"></span>
+          <div>
+            <strong id="connectionText">Đang kết nối...</strong>
+            <small id="catalogCount">Music Engine</small>
+          </div>
+        </div>
+        <p>EMBEAT MUSIC RECOMMENDER</p>
       </div>
     </aside>
 
-    <main class="main mx-auto min-w-0 max-w-[1600px] flex-1 px-[38px] pb-[70px] max-[850px]:px-5 max-[850px]:pb-12">
-      <header class="topbar flex h-[83px] items-center justify-between">
-        <div class="mobile-brand hidden text-lg font-extrabold max-[560px]:block">♫ EmBeat AI</div>
-        <span class="top-label text-[11px] font-bold tracking-[2px] text-[#929aac] max-[560px]:hidden">DISCOVER YOUR SOUND</span>
-        <span class="top-pill rounded-full border border-[#3d335a] bg-[#211b34] px-4 py-[9px] text-[11px] text-[#c5afff]">♫ Music Discovery</span>
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">YOUR MUSIC, YOUR VIBE</p>
+          <h2 id="pageHeading">Khám phá âm nhạc</h2>
+        </div>
+        <span class="top-chip">✦ Music Discovery</span>
       </header>
 
       <section id="home" class="view">
-        <div class="hero relative flex min-h-[330px] items-center justify-between overflow-hidden rounded-3xl border border-[#34403f] px-[46px] py-11 max-[850px]:p-[30px] max-[560px]:min-h-0 max-[560px]:px-5 max-[560px]:py-7">
-          <div class="hero-content relative z-10 min-w-0 max-w-[600px] flex-1">
-            <span class="eyebrow text-[10px] font-extrabold tracking-[2px] text-[#43e3a0]">✦ TRẢI NGHIỆM ÂM NHẠC THÔNG MINH</span>
-            <h1 class="my-4 text-[clamp(30px,4vw,46px)] font-bold leading-[1.15] tracking-tight">Âm nhạc dành riêng <em>cho bạn.</em></h1>
-            <p class="max-w-[450px] leading-7 text-[#b7c4c7]">
-              Tìm bài hát bạn yêu thích và khám phá những giai điệu tương đồng bằng công nghệ AI.
+        <div class="hero">
+          <div class="hero-content">
+            <p class="eyebrow">✦ MUSIC THAT FEELS LIKE YOU</p>
+            <h1>Âm nhạc dành riêng<br><em>cho bạn.</em></h1>
+            <p class="hero-description">
+              Tìm bài hát, khám phá gợi ý, nghe nhạc và hiểu hơn
+              về giai điệu bạn yêu thích.
             </p>
 
-            <div class="search-box mt-[26px] flex max-w-[510px] items-center gap-3 rounded-[13px] bg-white p-[7px] max-[560px]:gap-1">
-              <span class="search-icon ml-3 text-[26px] text-gray-500">⌕</span>
-              <input id="searchInput" class="min-w-0 flex-1 border-0 bg-transparent px-0 py-3 text-[#17202b] outline-none" type="search" placeholder="Tìm bài hát hoặc nghệ sĩ..." autocomplete="off">
-              <button id="searchBtn" class="btn primary shrink-0 max-[560px]:px-3">Tìm kiếm</button>
-            </div>
+            <form id="searchForm" class="search-form">
+              <span aria-hidden="true">⌕</span>
+              <input
+                id="searchInput"
+                type="search"
+                placeholder="Tên bài hát hoặc nghệ sĩ..."
+                aria-label="Tìm bài hát"
+                autocomplete="off"
+                required
+              >
+              <button type="submit">Tìm kiếm ↗</button>
+            </form>
           </div>
 
-          <div class="hero-art grid w-[260px] shrink-0 place-items-center max-[1150px]:w-[180px] max-[560px]:hidden" aria-hidden="true">
-            <div class="record grid h-[230px] w-[230px] place-items-center rounded-full border-[12px] border-[#0b161d] max-[1150px]:h-[175px] max-[1150px]:w-[175px]">
-              <div class="record-inner grid h-[90px] w-[90px] place-items-center rounded-full bg-[#43e3a0] text-[52px] text-[#092016]">♫</div>
+          <div class="vinyl-scene" aria-hidden="true">
+            <div class="vinyl">
+              <div class="vinyl-disc">E<span>♫</span></div>
+            </div>
+            <span class="floating-note note-a">♪</span>
+            <span class="floating-note note-b">✧</span>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-icon mint">♫</span>
+            <div>
+              <strong id="trackStat">—</strong>
+              <small>Bài hát trong thư viện</small>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon violet">✦</span>
+            <div>
+              <strong>06</strong>
+              <small>Tâm trạng âm nhạc</small>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon rose">♡</span>
+            <div>
+              <strong id="favoriteStat">0</strong>
+              <small>Bài yêu thích</small>
             </div>
           </div>
         </div>
 
-        <section class="section mt-11">
-          <div class="section-heading mb-5 flex items-end justify-between gap-4 max-[560px]:flex-col max-[560px]:items-start">
-            <div class="min-w-0">
-              <span class="eyebrow">YOUR VIBE</span>
-              <h2 class="mt-[10px] text-[22px] font-bold">Hôm nay bạn cảm thấy thế nào?</h2>
+        <section class="section-block" id="moodSection">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">EXPLORE YOUR FEELINGS</p>
+              <h2>Hôm nay bạn cảm thấy thế nào?</h2>
+              <p>Chọn một tâm trạng để khám phá những giai điệu phù hợp.</p>
             </div>
-            <p class="text-xs text-[#929aac]">Khám phá âm nhạc theo tâm trạng</p>
           </div>
 
-          <div class="moods grid grid-cols-6 gap-3 max-[1150px]:grid-cols-3 max-[560px]:grid-cols-2">
-            <button class="mood" data-mood="happy"><span>☀️</span><b>Vui vẻ</b><small>Happy</small></button>
-            <button class="mood" data-mood="sad"><span>🌧️</span><b>Tâm trạng</b><small>Sad</small></button>
-            <button class="mood" data-mood="calm"><span>🌙</span><b>Êm dịu</b><small>Calm</small></button>
-            <button class="mood" data-mood="chill"><span>🌊</span><b>Thư giãn</b><small>Chill</small></button>
-            <button class="mood" data-mood="energetic"><span>⚡</span><b>Sôi động</b><small>Energetic</small></button>
-            <button class="mood" data-mood="focus"><span>🎧</span><b>Tập trung</b><small>Focus</small></button>
+          <div class="mood-grid">
+            <button class="mood-card mood-happy" data-mood="happy">
+              <span>☀️</span><b>Vui vẻ</b><small>Happy vibes</small>
+            </button>
+            <button class="mood-card mood-sad" data-mood="sad">
+              <span>🌧️</span><b>Tâm trạng</b><small>Deep feelings</small>
+            </button>
+            <button class="mood-card mood-energetic" data-mood="energetic">
+              <span>⚡</span><b>Sôi động</b><small>High energy</small>
+            </button>
+            <button class="mood-card mood-chill" data-mood="chill">
+              <span>🌙</span><b>Thư giãn</b><small>Chill moments</small>
+            </button>
+            <button class="mood-card mood-calm" data-mood="calm">
+              <span>🌿</span><b>Êm dịu</b><small>Inner peace</small>
+            </button>
+            <button class="mood-card mood-focus" data-mood="focus">
+              <span>🎧</span><b>Tập trung</b><small>Deep focus</small>
+            </button>
           </div>
         </section>
 
-        <section class="section mt-11">
-          <div class="section-heading mb-5 flex items-end justify-between gap-4 max-[560px]:flex-col max-[560px]:items-start">
-            <div class="min-w-0">
-              <span class="eyebrow">PERSONALIZED FOR YOU</span>
-              <h2 id="resultsTitle" class="mt-[10px] text-[22px] font-bold">Khám phá âm nhạc</h2>
+        <div class="taste-banner">
+          <div class="taste-symbol">✧</div>
+          <div class="taste-text">
+            <p class="eyebrow">PERSONALIZED FOR YOU</p>
+            <h3>Khám phá gu âm nhạc riêng</h3>
+            <p>Lưu ít nhất 2 bài hát yêu thích để tạo đề xuất phù hợp với bạn.</p>
+          </div>
+          <button id="profileBtn" class="btn-primary">Tạo gợi ý ↗</button>
+        </div>
+
+        <section class="section-block results-section" id="resultsSection">
+          <div class="section-title result-header">
+            <div>
+              <p class="eyebrow">DISCOVER YOUR SOUND</p>
+              <h2 id="resultsTitle">Phổ biến trong EmBeat</h2>
+              <p id="resultsDescription">
+                Những bài hát nổi bật trong thư viện nhạc.
+              </p>
             </div>
-            <span id="resultCount" class="count shrink-0">0 bài hát</span>
+
+            <div class="section-actions">
+              <span id="resultCount" class="count-pill">—</span>
+              <button id="queueAllBtn" class="btn-outline">＋ Hàng đợi</button>
+              <button id="refreshBtn" class="btn-outline" title="Tải lại danh sách">↻</button>
+            </div>
           </div>
 
-          <p id="resultsDescription" class="muted">Tìm một bài hát hoặc chọn tâm trạng để bắt đầu.</p>
-
-          <div class="result-layout mt-[22px] grid min-w-0 grid-cols-[minmax(0,1fr)_300px] items-start gap-5 max-[1150px]:grid-cols-[minmax(0,1fr)_270px] max-[850px]:grid-cols-1">
-            <div id="recommendationsList" class="track-list grid min-w-0 grid-cols-1 gap-[10px]">
-              <div class="empty">
-                ♫
-                <h3>Khám phá bài hát tiếp theo</h3>
-                <p>Nhập tên bài hát, nghệ sĩ hoặc chọn một tâm trạng.</p>
-              </div>
+          <div id="seedBanner" class="seed-banner hidden">
+            <span>✦</span>
+            <div>
+              <small>BÀI HÁT GỐC</small>
+              <strong id="seedName">—</strong>
             </div>
+            <button id="seedAnalyzeBtn" class="btn-outline">Phân tích ↗</button>
+          </div>
 
-            <aside class="player-panel min-w-0 rounded-[18px] border border-[#282e3d] bg-[#111521] p-5">
-              <div class="panel-title">♫ NOW PLAYING</div>
-              <div id="nowPlayingCover" class="album-placeholder">♫</div>
-              <h3 id="nowPlayingTitle">Chưa chọn bài hát</h3>
-              <p id="nowPlayingArtist" class="muted">Chọn một bài hát để nghe</p>
-              <p id="nowPlayingPopularity" class="small muted"></p>
+          <details class="advanced-settings">
+            <summary>
+              ⚙ Tùy chỉnh gợi ý theo bài hát <span>⌄</span>
+            </summary>
 
-              <iframe id="spotifyPlayer" class="w-full" title="Spotify Music Player" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+            <div class="settings-grid">
+              <label>
+                Thuật toán
+                <select id="strategySelect">
+                  <option value="hybrid">Hybrid (Âm học + Thể loại)</option>
+                  <option value="audio">Audio (Âm học)</option>
+                  <option value="mmr">MMR (Đa dạng)</option>
+                </select>
+              </label>
 
-              <button id="recommendCurrent" class="btn outline full" disabled>✦ Gợi ý bài tương tự</button>
-            </aside>
+              <label>
+                Số bài đề xuất
+                <select id="recommendCount">
+                  <option value="5">5 bài</option>
+                  <option value="10" selected>10 bài</option>
+                  <option value="15">15 bài</option>
+                  <option value="20">20 bài</option>
+                </select>
+              </label>
+
+              <label>
+                Alpha <strong id="alphaValue">0.70</strong>
+                <input id="alphaInput" type="range" min="0" max="1" step="0.05" value="0.7">
+              </label>
+
+              <label>
+                MMR Lambda <strong id="lambdaValue">0.70</strong>
+                <input id="lambdaInput" type="range" min="0" max="1" step="0.05" value="0.7">
+              </label>
+
+              <label class="checkbox-setting">
+                <input id="excludeArtist" type="checkbox" checked>
+                Loại bài cùng nghệ sĩ
+              </label>
+            </div>
+          </details>
+
+          <div class="results-hint">
+            Tick ô <b>◎</b> để chọn bài vào Radar ·
+            <span id="radarSelectedCount">0/10 đã chọn</span>
+          </div>
+
+          <div id="resultsList" class="track-list" aria-live="polite">
+            <div class="empty-state">Đang tải nhạc...</div>
+          </div>
+        </section>
+
+        <!-- RADAR NẰM CUỐI TRANG KHÁM PHÁ -->
+        <section class="radar-teaser" aria-labelledby="radarTeaserTitle">
+          <div class="radar-teaser-copy">
+            <span class="eyebrow">MUSIC INSIGHTS</span>
+            <h2 id="radarTeaserTitle">Phân tích gu âm nhạc bằng Radar</h2>
+            <p>
+              Chọn tối đa <strong>10 bài hát</strong> từ các danh sách.
+              Bạn có thể bật/tắt từng bài trên biểu đồ.
+            </p>
+            <p id="miniRadarCount" class="selection-subtext">
+              0/10 bài đã chọn
+            </p>
+
+            <label class="auto-switch">
+              <input id="openRadarCheckbox" type="checkbox">
+              <span>Chuyển sang trang Phân tích Radar</span>
+            </label>
+
+            <button class="btn-outline" id="openAnalysisBtn">
+              Mở phân tích chi tiết ↗
+            </button>
+          </div>
+
+          <div class="mini-radar-box">
+            <canvas
+              id="miniRadarChart"
+              aria-label="Radar xem nhanh các bài đã chọn">
+            </canvas>
+            <div id="miniRadarEmpty" class="mini-empty">
+              ◎
+              <small>Tick ô ◎ trên các bài hát để thêm vào Radar</small>
+            </div>
           </div>
         </section>
       </section>
 
       <section id="favorites" class="view hidden">
-        <div class="page-header my-9">
-          <span class="eyebrow">YOUR COLLECTION</span>
-          <h1 class="my-3 text-[clamp(30px,4vw,46px)] font-bold">Thư viện yêu thích ♡</h1>
-          <p class="muted">Lưu những bài hát bạn thích để AI hiểu gu âm nhạc của bạn.</p>
-        </div>
-
-        <div class="toolbar mb-[18px] flex items-center justify-between gap-4 max-[560px]:flex-col max-[560px]:items-start">
-          <span id="favoriteCount" class="count">0 bài hát</span>
-          <div class="toolbar-actions flex flex-wrap gap-[10px]">
-            <button id="generateProfile" class="btn primary">✦ Gợi ý theo gu âm nhạc</button>
-            <button id="clearFavorites" class="btn outline">Xóa tất cả</button>
+        <div class="library-hero">
+          <div class="library-cover">♡</div>
+          <div>
+            <span class="eyebrow">YOUR PERSONAL LIBRARY</span>
+            <h1>Thư viện yêu thích</h1>
+            <p>Những giai điệu bạn muốn lưu lại.</p>
+            <div class="library-actions">
+              <button id="favoritesProfileBtn" class="btn-primary">
+                ✧ Gợi ý theo gu
+              </button>
+              <button id="queueFavoritesBtn" class="btn-outline">
+                ▶ Thêm vào hàng đợi
+              </button>
+            </div>
           </div>
         </div>
 
-        <p class="muted small">Chọn ít nhất 2 bài hát để sử dụng Taste Profile.</p>
-        <div id="favoritesList" class="track-list grid min-w-0 grid-cols-1 gap-[10px]"></div>
+        <div class="section-title library-title">
+          <div>
+            <p class="eyebrow">SAVED TRACKS</p>
+            <h2>Danh sách của bạn</h2>
+          </div>
+          <span id="favoriteCountLabel" class="count-pill">0 bài</span>
+        </div>
+
+        <div id="favoritesList" class="track-list"></div>
       </section>
 
       <section id="analysis" class="view hidden">
-        <div class="page-header my-9">
-          <span class="eyebrow">AUDIO INTELLIGENCE</span>
-          <h1 class="my-3 text-[clamp(30px,4vw,46px)] font-bold">Phân tích âm nhạc ◈</h1>
-          <p class="muted">So sánh 9 đặc trưng âm học giữa bài gốc và bài hát được đề xuất.</p>
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">AUDIO INTELLIGENCE</p>
+            <h2>Phân tích âm nhạc</h2>
+            <p>Chọn tối đa 10 bài hát và chủ động bật/tắt từng bài để biểu đồ dễ đọc.</p>
+          </div>
         </div>
 
-        <div class="analysis-grid grid grid-cols-[minmax(0,1.4fr)_minmax(280px,1fr)] gap-5 max-[850px]:grid-cols-1">
-          <div class="panel min-w-0 rounded-[18px] border border-[#282e3d] bg-[#111521] p-5">
-            <div class="panel-title">BIỂU ĐỒ RADAR — 9 ĐẶC TRƯNG</div>
-            <div class="chart-wrapper relative h-[380px] min-w-0">
-              <canvas id="audioFeaturesChart"></canvas>
+        <div class="analysis-main">
+          <div class="analysis-toolbar">
+            <div>
+              <strong id="analysisCount">0/10 bài đã chọn</strong>
+              <small>Hiện ít nhất 2 bài để so sánh trên Radar.</small>
             </div>
-            <p class="muted small">
-              Các giá trị được chuẩn hóa về khoảng 0–1 để so sánh trực quan.
-              Tempo và Loudness được hiển thị theo đơn vị gốc ở bảng bên cạnh.
-            </p>
+            <div class="analysis-buttons">
+              <button id="showAllRadarBtn" class="btn-outline">Hiện tất cả</button>
+              <button id="hideAllRadarBtn" class="btn-outline">Ẩn tất cả</button>
+              <button id="clearRadarBtn" class="btn-outline danger">Xóa danh sách</button>
+            </div>
           </div>
 
-          <div class="panel min-w-0 rounded-[18px] border border-[#282e3d] bg-[#111521] p-5">
-            <div class="panel-title">CHI TIẾT SO SÁNH</div>
-            <h3 id="seedTrackLabel">Chưa chọn bài gốc</h3>
-            <p class="muted small">Bài hát gốc</p>
-            <div class="separator"></div>
+          <div class="chart-box">
+            <canvas id="radarChart" aria-label="Radar so sánh đặc trưng âm học"></canvas>
 
-            <h3 id="compareTrackLabel">Chưa chọn bài so sánh</h3>
-            <p class="muted small">Bài hát đề xuất</p>
-            <div class="separator"></div>
-
-            <div id="featureDetails" class="feature-details">
-              Chọn một bài hát gốc và một bài gợi ý để xem dữ liệu.
+            <div id="radarEmpty" class="empty-overlay">
+              ◎
+              <p>Tick ô ◎ trên các bài hát ở trang Khám phá hoặc Yêu thích để bắt đầu.</p>
+              <button id="analysisToHomeBtn" class="btn-primary">
+                Chọn bài hát ↗
+              </button>
             </div>
-
-            <button class="btn outline full" data-view="home">Quay lại khám phá</button>
           </div>
+
+          <div class="chart-footnote">
+            Các thang đo được chuẩn hóa về 0–1 để so sánh.
+            Tempo và Loudness hiển thị đơn vị gốc trong thẻ chi tiết.
+          </div>
+        </div>
+
+        <div class="analysis-selected-card">
+          <div class="section-title compact">
+            <div>
+              <p class="eyebrow">CUSTOMIZE YOUR RADAR</p>
+              <h2>Bật / tắt từng bài</h2>
+              <p>Ẩn một bài trên biểu đồ không xóa bài đó khỏi danh sách đã chọn.</p>
+            </div>
+          </div>
+          <div id="radarSelectionList" class="radar-selection-list"></div>
+        </div>
+
+        <div class="analysis-feature-card">
+          <div class="section-title compact">
+            <div>
+              <p class="eyebrow">AUDIO FEATURE EXPLORER</p>
+              <h2>Đặc trưng âm học</h2>
+              <p>Energy, Danceability, Valence, Acousticness, Tempo và các chỉ số bổ sung.</p>
+            </div>
+          </div>
+          <div id="analysisFeatureList" class="analysis-feature-list"></div>
         </div>
       </section>
     </main>
+
+    <aside class="studio" aria-label="Trình phát nhạc">
+      <div class="studio-top">
+        <div>
+          <p class="eyebrow">YOUR MUSIC SPACE</p>
+          <h2>Now Playing</h2>
+        </div>
+        <span class="equalizer" aria-hidden="true">
+          <i></i><i></i><i></i><i></i>
+        </span>
+      </div>
+
+      <div id="playerCover" class="player-cover">
+        <div>♫</div>
+        <span>EMBEAT MUSIC</span>
+      </div>
+
+      <div class="player-info">
+        <h3 id="playerTitle">Chưa chọn bài hát</h3>
+        <p id="playerArtist">Bấm ▶ trên danh sách để nghe</p>
+      </div>
+
+      <div class="player-controls">
+        <button id="prevBtn" type="button" title="Bài trước">⏮</button>
+        <button
+          id="playerPlayPauseBtn"
+          type="button"
+          title="Phát nhạc"
+          aria-label="Phát hoặc tạm dừng">
+          ▶
+        </button>
+        <button id="nextBtn" type="button" title="Bài tiếp theo">⏭</button>
+      </div>
+
+      <button
+        id="playerFavoriteBtn"
+        type="button"
+        class="btn-outline"
+        title="Thêm vào yêu thích">
+        ♡ Yêu thích
+      </button>
+
+      <div id="spotifyContainer" class="spotify-container hidden">
+        <div id="spotifyFrame"></div>
+      </div>
+
+      <p id="playerHelp" class="player-help">
+        Chọn bài hát để nghe qua Spotify.
+      </p>
+
+      <a
+        id="spotifyLink"
+        class="spotify-link hidden"
+        href="#"
+        target="_blank"
+        rel="noopener noreferrer">
+        Mở trên Spotify ↗
+      </a>
+
+      <hr class="studio-rule">
+
+      <div class="queue-heading">
+        <div>
+          <h3>Hàng đợi</h3>
+          <p id="queueCount">0 bài hát</p>
+        </div>
+        <button id="clearQueueBtn" type="button" title="Xóa hàng đợi">✕</button>
+      </div>
+
+      <div id="queueList" class="queue-list">
+        <p class="queue-empty">Chưa có bài hát trong hàng đợi.</p>
+      </div>
+
+      <p class="studio-footer">✦ Made for music lovers</p>
+    </aside>
   </div>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="https://open.spotify.com/embed/iframe-api/v1" defer></script>
 </body>
 </html>
